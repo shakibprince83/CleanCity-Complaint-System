@@ -724,6 +724,8 @@ html[data-theme='light'] .hero__visual .floating-card .mini-progress::before { b
 .admin-profile-identity .profile-contact { margin-top: 18px; }
 @media (max-width: 940px) { .verification-review-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .verification-review-actions { flex-direction: column; }.verification-review-actions .button { width: 100%; } }
+.gps-ready-text { margin-left: auto; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .45px; white-space: nowrap; }
+html[data-theme='light'] .gps-ready-text { color: #116b3e; }
 
 /* Light submission confirmation: explicit colors prevent inherited pale text. */
 html[data-theme='light'] .success-card {

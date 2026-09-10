@@ -206,7 +206,7 @@ export function LocationSelection({ navigate, location, setLocation, showToast }
       <div className="location-layout">
         <Panel className="location-map-panel"><LeafletMap value={location} onChange={setLocation} /></Panel>
         <Panel title="Location details" className="location-details">
-          <div className="coordinate-card"><span><LocateFixed size={20} /></span><div><small>SELECTED COORDINATES</small><strong>{location[0]}, {location[1]}</strong></div><Badge tone="green">GPS READY</Badge></div>
+          <div className="coordinate-card"><span><LocateFixed size={20} /></span><div><small>SELECTED COORDINATES</small><strong>{location[0]}, {location[1]}</strong></div><strong className="gps-ready-text">GPS READY</strong></div>
           <Field label="Address"><div className="input-wrap"><MapPin size={17} /><input value={address} onChange={(event) => setAddress(event.target.value)} /></div></Field>
           <div className="form-grid form-grid--two">
             <Field label="Area or ward"><select defaultValue="Ward 19"><option>Ward 19</option><option>Ward 20</option><option>Ward 18</option></select></Field>
