@@ -186,7 +186,7 @@ function AuthLayout({ navigate, title, description, children, compact = false })
       </div>
       <div className="auth-page__form">
         <div className={`auth-card ${compact ? 'auth-card--compact' : ''}`}>
-          <div className="auth-card__top"><BackToPreview navigate={navigate} /><Badge tone="green">UI DEMO</Badge></div>
+          <div className="auth-card__top"><BackToPreview navigate={navigate} /></div>
           <h1>{title}</h1>
           <p>{description}</p>
           {children}
