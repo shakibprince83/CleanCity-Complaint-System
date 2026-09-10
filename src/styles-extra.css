@@ -776,6 +776,26 @@ html[data-theme='light'] .site-footer {
   letter-spacing: .45px;
 }
 html[data-theme='light'] .assignee-card .availability-text { color: #117342; }
+
+.admin-history { gap: 4px; }
+.admin-history > span {
+  gap: 13px;
+  padding: 14px 0;
+}
+.admin-history i {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+}
+.admin-history strong {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.admin-history small {
+  margin-top: 3px;
+  font-size: 9.5px;
+  line-height: 1.4;
+}
 @media (max-width: 940px) { .verification-review-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .verification-review-actions { flex-direction: column; }.verification-review-actions .button { width: 100%; } }
 .gps-ready-text { margin-left: auto; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .45px; white-space: nowrap; }
