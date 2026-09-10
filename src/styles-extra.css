@@ -737,6 +737,11 @@ html[data-theme='dark'] .notification-types .tick--checked svg {
   stroke-width: 3.25;
 }
 
+html[data-theme='light'] .notification-types span {
+  color: #315f47;
+  font-weight: 650;
+}
+
 /* Light submission confirmation: explicit colors prevent inherited pale text. */
 html[data-theme='light'] .success-card {
   color: #173b29;
