@@ -664,7 +664,7 @@ html[data-theme='light'] .success-card .dashboard-return:hover { color: #126b3f;
 
 /* Keep confirmation actions readable regardless of inherited card text rules. */
 html[data-theme='light'] .success-card .success-actions > button.button--outline {
-  color: #0b462a !important;
+  color: #000000 !important;
   background: #ffffff !important;
   border: 2px solid #167044 !important;
   opacity: 1 !important;
@@ -678,7 +678,7 @@ html[data-theme='light'] .success-card .success-actions > button.button--primary
   font-weight: 850;
   text-shadow: 0 1px 1px rgba(0,45,24,.35);
 }
-html[data-theme='light'] .success-card .success-actions > button.button--outline:hover { color: #06391f !important; background: #e6f2e9 !important; }
+html[data-theme='light'] .success-card .success-actions > button.button--outline:hover { color: #000000 !important; background: #e6f2e9 !important; }
 html[data-theme='light'] .success-card .success-actions > button.button--primary:hover { color: #ffffff !important; background: linear-gradient(135deg,#159b58,#055c33) !important; }
 
 /* Light submission confirmation: explicit colors prevent inherited pale text. */
