@@ -604,3 +604,35 @@ html[data-theme='light'] :where(.auth-page__visual,.map-snapshot,.snapshot-photo
 html[data-theme='light'] :where(.auth-page__visual,.map-snapshot,.snapshot-photo,.success-card) :where(h1,h2,h3,strong) { color: #f4fff8; }
 html[data-theme='light'] :where(.auth-page__visual,.map-snapshot,.snapshot-photo,.success-card) :where(p,small,span) { color: #b9d5c6; }
 html[data-theme='light'] .auth-page__visual :where(.button--glass,.button--ghost),html[data-theme='light'] .success-card :where(.button--glass,.button--ghost) { color: #e9fff2; border-color: rgba(223,255,237,.22); background: rgba(255,255,255,.08); }
+
+/* Submission confirmation stays dark so its light content remains fully legible. */
+html[data-theme='light'] .success-card {
+  color: #edfff5;
+  border-color: rgba(92,222,152,.28);
+  background: radial-gradient(circle at 50% 0%,rgba(92,222,152,.15),transparent 38%),linear-gradient(145deg,#123b29,#071d13);
+  box-shadow: 0 30px 80px rgba(20,70,43,.27),inset 0 1px rgba(255,255,255,.08);
+}
+html[data-theme='light'] .success-card h1 { color: #f4fff8; }
+html[data-theme='light'] .success-card > p { color: #bcd8c9; }
+html[data-theme='light'] .success-card .complaint-id-card {
+  border-color: rgba(105,232,163,.32);
+  background: rgba(70,196,127,.12);
+}
+html[data-theme='light'] .success-card .complaint-id-card small { color: #9bd5b3; }
+html[data-theme='light'] .success-card .complaint-id-card strong { color: #d7ffe7; }
+html[data-theme='light'] .success-card .complaint-id-card > span:last-child { color: #76e5a8; }
+html[data-theme='light'] .success-card .success-summary > span {
+  color: #edfff5;
+  border-color: rgba(185,234,205,.16);
+  background: rgba(255,255,255,.055);
+}
+html[data-theme='light'] .success-card .success-summary small { color: #a9c9b9; }
+html[data-theme='light'] .success-card .success-summary strong { color: #f2fff7; }
+html[data-theme='light'] .success-card .next-step-card {
+  border-color: rgba(105,183,255,.28);
+  background: rgba(56,135,190,.13);
+}
+html[data-theme='light'] .success-card .next-step-card strong { color: #eef9ff; }
+html[data-theme='light'] .success-card .next-step-card small { color: #bad1dc; }
+html[data-theme='light'] .success-card .dashboard-return { color: #b8d3c4; }
+html[data-theme='light'] .success-card .dashboard-return:hover { color: #75e5a7; }
