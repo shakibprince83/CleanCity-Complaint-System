@@ -136,7 +136,7 @@ export function EditComplaint({ navigate, complaint, showToast }) {
             <Field label="Complaint status"><select value={status} onChange={(event) => setStatus(event.target.value)}><option>Pending</option><option>Under Review</option><option>Assigned</option><option>In Progress</option><option>Resolved</option></select></Field>
             <Field label="Priority level"><select value={priority} onChange={(event) => setPriority(event.target.value)}><option>Normal</option><option>Medium</option><option>High</option><option>Urgent</option></select></Field>
             <Field label="Assign staff or team"><select defaultValue="North Zone Team A"><option>North Zone Team A</option><option>North Zone Team B</option><option>Central Response Team</option></select></Field>
-            <div className="assignee-card"><span>NT</span><div><strong>North Zone Team A</strong><small>4 active staff · 7 open tasks</small></div><Badge tone="green">AVAILABLE</Badge></div>
+            <div className="assignee-card"><span>NT</span><div><strong>North Zone Team A</strong><small>4 active staff · 7 open tasks</small></div><strong className="availability-text">AVAILABLE</strong></div>
           </Panel>
           <Panel className="save-panel"><div><ShieldCheck size={20} /><span><strong>Changes are ready</strong><small>The citizen will receive a status notification.</small></span></div><div><Button variant="ghost" onClick={() => navigate('manage-complaints')}>Cancel</Button><Button icon={Save} onClick={save}>Save changes</Button></div></Panel>
         </div>
