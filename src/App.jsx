@@ -129,6 +129,7 @@ export default function App() {
   return (
     <>
       {screens[screen] || screens.preview}
+      <footer className="site-footer">All rights reserved © Team Void</footer>
       <ThemeToggle theme={theme} onToggle={toggleTheme} />
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </>
