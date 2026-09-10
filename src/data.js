@@ -121,10 +121,10 @@ export const statusSteps = [
 
 export const adminSidebar = [
   ['admin-dashboard', 'Dashboard'],
-  ['admin-profile', 'My profile'],
   ['manage-complaints', 'Manage complaints'],
   ['user-management', 'User management'],
   ['report-authority', 'Reports'],
+  ['admin-profile', 'My profile'],
 ];
 
 export const citizenSidebar = [
