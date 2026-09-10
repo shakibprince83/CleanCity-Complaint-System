@@ -681,6 +681,19 @@ html[data-theme='light'] .success-card .success-actions > button.button--primary
 html[data-theme='light'] .success-card .success-actions > button.button--outline:hover { color: #000000 !important; background: #e6f2e9 !important; }
 html[data-theme='light'] .success-card .success-actions > button.button--primary:hover { color: #ffffff !important; background: linear-gradient(135deg,#159b58,#055c33) !important; }
 
+html[data-theme='light'] .success-actions .confirmation-button--submit .confirmation-button__label {
+  color: #000000 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #000000;
+}
+html[data-theme='light'] .success-actions .confirmation-button--view .confirmation-button__label,
+html[data-theme='light'] .success-actions .confirmation-button--view svg {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #ffffff;
+}
+.confirmation-button__label { font-weight: 900; }
+
 /* Light submission confirmation: explicit colors prevent inherited pale text. */
 html[data-theme='light'] .success-card {
   color: #173b29;

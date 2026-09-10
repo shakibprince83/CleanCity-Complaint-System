@@ -253,7 +253,14 @@ export function SubmissionConfirmation({ navigate, complaint, showToast }) {
             <span><small>Initial status</small><StatusBadge status="Pending" /></span>
           </div>
           <div className="next-step-card"><Clock size={20} /><span><strong>What happens next?</strong><small>An administrator normally reviews complete reports within two hours. You will receive an in-app notification.</small></span></div>
-          <div className="success-actions"><Button variant="outline" onClick={() => navigate('submit-complaint')}>Submit another</Button><Button onClick={() => navigate('complaint-details')}>View complaint <ArrowRight size={16} /></Button></div>
+          <div className="success-actions">
+            <Button variant="outline" className="confirmation-button confirmation-button--submit" onClick={() => navigate('submit-complaint')}>
+              <span className="confirmation-button__label">Submit another</span>
+            </Button>
+            <Button className="confirmation-button confirmation-button--view" onClick={() => navigate('complaint-details')}>
+              <span className="confirmation-button__label">View complaint</span><ArrowRight size={16} />
+            </Button>
+          </div>
           <button className="dashboard-return" onClick={() => navigate('citizen-dashboard')}>Return to citizen dashboard</button>
         </Panel>
       </div>
