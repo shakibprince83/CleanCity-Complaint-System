@@ -6,6 +6,7 @@ Interactive frontend prototype for Team Void's waste collection complaint system
 
 - 19 individually accessible presentation screens
 - Responsive dark-green civic theme with glass surfaces and hover states
+- Global dark and light modes with saved browser preference
 - Mock data and UI-only demo mode; no backend is required for the presentation
 - All displayed people, contacts, addresses and complaint records are fictional demo data
 - Password confirmation, NID verification state and optional volunteer registration

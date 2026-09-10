@@ -1,5 +1,5 @@
 import React from 'react';
-import { Toast } from './components/Common';
+import { ThemeToggle, Toast } from './components/Common';
 import { complaintsSeed, notificationsSeed, usersSeed } from './data';
 import {
   HomePage,
@@ -44,6 +44,7 @@ function screenFromHash() {
 
 export default function App() {
   const [screen, setScreen] = React.useState(screenFromHash);
+  const [theme, setTheme] = React.useState(() => document.documentElement.dataset.theme || 'dark');
   const [complaints, setComplaints] = React.useState(complaintsSeed);
   const [notifications, setNotifications] = React.useState(notificationsSeed);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
@@ -59,11 +60,24 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [screen]);
 
+  React.useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#eef5f0' : '#071a12');
+    try {
+      localStorage.setItem('cleancity-theme', theme);
+    } catch {
+      // Theme switching still works when browser storage is unavailable.
+    }
+  }, [theme]);
+
   const navigate = React.useCallback((nextScreen) => {
     window.location.hash = `/${nextScreen}`;
   }, []);
 
   const showToast = React.useCallback((message) => setToast(message), []);
+  const toggleTheme = React.useCallback(() => {
+    setTheme((current) => current === 'dark' ? 'light' : 'dark');
+  }, []);
 
   const addComplaint = React.useCallback((payload) => {
     const complaint = {
@@ -111,6 +125,7 @@ export default function App() {
   return (
     <>
       {screens[screen] || screens.preview}
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </>
   );

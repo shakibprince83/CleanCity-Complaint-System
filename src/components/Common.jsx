@@ -16,10 +16,12 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Moon,
   Plus,
   Search,
   Settings,
   ShieldCheck,
+  Sun,
   User,
   Users,
   X,
@@ -79,6 +81,26 @@ export function Button({ children, variant = 'primary', icon: Icon, className = 
 
 export function IconButton({ icon: Icon, label, className = '', ...props }) {
   return <button className={`icon-button ${className}`} aria-label={label} title={label} {...props}><Icon size={19} /></button>;
+}
+
+export function ThemeToggle({ theme = 'dark', onToggle }) {
+  const isLight = theme === 'light';
+  const nextTheme = isLight ? 'Dark' : 'Light';
+  const Icon = isLight ? Moon : Sun;
+
+  return (
+    <button
+      className="theme-toggle"
+      type="button"
+      onClick={onToggle}
+      aria-label={`Switch to ${nextTheme.toLowerCase()} mode`}
+      title={`Switch to ${nextTheme.toLowerCase()} mode`}
+      aria-pressed={isLight}
+    >
+      <span className="theme-toggle__icon"><Icon size={18} /></span>
+      <span><strong>{nextTheme}</strong><small>mode</small></span>
+    </button>
+  );
 }
 
 export function PageHeading({ eyebrow, title, description, actions }) {
