@@ -173,11 +173,61 @@ export function EditUser({ navigate, user, showToast }) {
           <Panel title="Account settings"><div className="form-grid form-grid--two"><Field label="User type"><select defaultValue="Citizen"><option>Citizen</option><option>Service Officer</option><option>Admin</option></select></Field><Field label="Account status"><select defaultValue="Active"><option>Active</option><option>Inactive</option></select></Field><Field label="Preferred language"><select><option>English</option><option>বাংলা</option></select></Field><Field label="Notification preference"><select><option>All updates</option><option>Important only</option><option>Disabled</option></select></Field></div></Panel>
         </div>
         <div className="edit-sidebar">
-          <Panel title="Identity verification"><div className="verification-profile"><span><BadgeCheck size={27} /></span><h3>NID verified</h3><p>DEMO •••• 0001</p><Badge tone="green">VERIFIED 19 AUG 2026</Badge></div><Button variant="outline" className="button--full">Review verification</Button></Panel>
+          <Panel title="Identity verification"><div className="verification-profile"><span><BadgeCheck size={27} /></span><h3>NID verified</h3><p>DEMO •••• 0001</p><strong className="verification-date">VERIFIED 19 AUG 2026</strong></div><Button variant="outline" className="button--full" onClick={() => navigate('verification-review')}>Review verification</Button></Panel>
           <Panel title="Security"><div className="security-list"><span><small>Last login</small><strong>Today, 08:42 AM</strong></span><span><small>Account created</small><strong>19 Aug 2026</strong></span></div><Button variant="outline" icon={Mail} className="button--full" onClick={() => showToast('Password-reset email queued')}>Send password reset</Button></Panel>
           <Panel className="danger-panel"><h3><Trash2 size={18} /> Delete user</h3><p>Permanently remove this account and restrict future access.</p><Button variant="danger">Delete user</Button></Panel>
           <div className="sticky-actions"><Button variant="ghost" onClick={() => navigate('user-management')}>Cancel</Button><Button icon={Save} onClick={() => showToast('User changes saved')}>Save user</Button></div>
         </div>
+      </div>
+    </Shell>
+  );
+}
+
+export function AdminProfile({ navigate, showToast }) {
+  const [editing, setEditing] = React.useState(false);
+  const [profile, setProfile] = React.useState({ name: 'Demo Administrator', email: 'admin@example.test', phone: '+880 1XXX XXXXXX', department: 'City Operations', role: 'System Administrator' });
+  const update = (key) => (event) => setProfile((current) => ({ ...current, [key]: event.target.value }));
+  const save = () => { setEditing(false); showToast('Administrator profile updated'); };
+  return (
+    <Shell screen="admin-profile" navigate={navigate}>
+      <PageHeading eyebrow="ADMINISTRATOR ACCOUNT" title="My profile" description="View and update your administrator information." actions={editing ? <><Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button><Button icon={Save} onClick={save}>Save changes</Button></> : <Button icon={PenLine} onClick={() => setEditing(true)}>Edit profile</Button>} />
+      <div className="profile-layout admin-profile-layout">
+        <Panel className="profile-identity admin-profile-identity">
+          <div className="profile-avatar">DA<span><ShieldCheck size={18} /></span></div>
+          <h2>{profile.name}</h2><Badge tone="green">ACTIVE ADMIN</Badge><p>{profile.role}</p>
+          <div className="profile-contact"><span><Mail size={17} />{profile.email}</span><span><User size={17} />{profile.department}</span><span><Shield size={17} />Full administrative access</span></div>
+        </Panel>
+        <div className="profile-main">
+          <Panel title="Administrator information">
+            <div className="form-grid form-grid--two">
+              <Field label="Full name"><input value={profile.name} onChange={update('name')} disabled={!editing} /></Field>
+              <Field label="Email address"><input value={profile.email} onChange={update('email')} disabled={!editing} /></Field>
+              <Field label="Phone number"><input value={profile.phone} onChange={update('phone')} disabled={!editing} /></Field>
+              <Field label="Department"><input value={profile.department} onChange={update('department')} disabled={!editing} /></Field>
+              <Field label="Administrator role"><input value={profile.role} onChange={update('role')} disabled={!editing} /></Field>
+              <Field label="Account status"><input value="Active" disabled /></Field>
+            </div>
+          </Panel>
+          <Panel title="Account security"><div className="security-list"><span><small>Last login</small><strong>Today, 08:42 AM</strong></span><span><small>Account created</small><strong>19 Aug 2026</strong></span><span><small>Access level</small><strong>Full administrator</strong></span></div><Button variant="outline" icon={Shield} onClick={() => showToast('Security settings opened')}>Manage security</Button></Panel>
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
+export function VerificationReview({ navigate, user, showToast }) {
+  return (
+    <Shell screen="user-management" navigate={navigate}>
+      <PageHeading eyebrow={`IDENTITY REVIEW · ${user.id}`} title="Review identity verification" description="Review the citizen's submitted identity information and verification record." actions={<Button variant="outline" onClick={() => navigate('edit-user')}>Back to user</Button>} />
+      <div className="verification-review-layout">
+        <Panel title="Submitted identity">
+          <div className="verification-document"><ShieldCheck size={46} /><span><strong>National ID document</strong><small>Protected demonstration preview</small></span></div>
+          <div className="info-grid"><Info label="Citizen name" value={user.name} /><Info label="NID number" value="DEMO •••• 0001" /><Info label="Submitted" value="19 Aug 2026" /><Info label="Current result" value="Verified" /></div>
+        </Panel>
+        <Panel title="Verification checks">
+          <div className="checklist"><article><Tick /><span><strong>Name matched</strong><small>Profile and document names are consistent.</small></span><Badge tone="green">PASSED</Badge></article><article><Tick /><span><strong>Document checked</strong><small>The submitted document passed the demo review.</small></span><Badge tone="green">PASSED</Badge></article><article><Tick /><span><strong>Account ownership</strong><small>Contact details belong to the registered citizen.</small></span><Badge tone="green">PASSED</Badge></article></div>
+          <div className="verification-review-actions"><Button variant="outline" onClick={() => showToast('Verification sent back for review')}>Request recheck</Button><Button icon={CheckCircle2} onClick={() => { showToast('Identity verification confirmed'); navigate('edit-user'); }}>Confirm verification</Button></div>
+        </Panel>
       </div>
     </Shell>
   );

@@ -19,12 +19,14 @@ import {
 } from './pages/CitizenPages';
 import {
   AdminDashboard,
+  AdminProfile,
   EditComplaint,
   EditUser,
   ManageComplaints,
   PointDegradation,
   ReportAuthority,
   UserManagement,
+  VerificationReview,
   ValidityReview,
 } from './pages/AdminPages';
 
@@ -33,7 +35,7 @@ const knownScreens = new Set([
   'citizen-dashboard', 'submit-complaint', 'location', 'submission-confirmation', 'my-complaints',
   'complaint-details', 'profile', 'notifications',
   'admin-dashboard', 'manage-complaints', 'edit-complaint',
-  'user-management', 'edit-user', 'report-authority',
+  'admin-profile', 'user-management', 'edit-user', 'verification-review', 'report-authority',
   'validity-review', 'point-degradation',
 ]);
 
@@ -113,10 +115,12 @@ export default function App() {
     profile: <ProfilePage {...shared} complaints={complaints} />,
     notifications: <NotificationsPage {...shared} notifications={notifications} markAllRead={markAllRead} />,
     'admin-dashboard': <AdminDashboard {...shared} complaints={complaints} />,
+    'admin-profile': <AdminProfile {...shared} />,
     'manage-complaints': <ManageComplaints {...shared} complaints={complaints} />,
     'edit-complaint': <EditComplaint {...shared} complaint={activeComplaint} />,
     'user-management': <UserManagement {...shared} users={usersSeed} />,
     'edit-user': <EditUser {...shared} user={activeUser} />,
+    'verification-review': <VerificationReview {...shared} user={activeUser} />,
     'report-authority': <ReportAuthority {...shared} complaint={activeComplaint} />,
     'validity-review': <ValidityReview {...shared} complaint={activeComplaint} />,
     'point-degradation': <PointDegradation {...shared} />,

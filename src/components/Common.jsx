@@ -35,6 +35,7 @@ const iconMap = {
   notifications: Bell,
   profile: User,
   'admin-dashboard': LayoutDashboard,
+  'admin-profile': User,
   'manage-complaints': FileText,
   'user-management': Users,
   'report-authority': BarChart3,
@@ -201,12 +202,12 @@ export function AppShell({ type = 'citizen', active, navigate, children, onPrevi
           <SearchBox value="" onChange={() => {}} placeholder={type === 'admin' ? 'Search complaints, users or reports' : 'Search your complaints'} />
           <div className="topbar__actions">
             <IconButton icon={Bell} label="Notifications" onClick={() => navigate(type === 'admin' ? 'admin-dashboard' : 'notifications')} />
-            <button className="profile-chip" onClick={() => navigate(type === 'admin' ? 'edit-user' : 'profile')}>
+            <button className="profile-chip" onClick={() => navigate(type === 'admin' ? 'admin-profile' : 'profile')}>
               <span className="avatar">{type === 'admin' ? 'DA' : 'DC'}</span>
               <span><strong>{type === 'admin' ? 'Demo Administrator' : 'Demo Citizen'}</strong><small>{type === 'admin' ? 'System Administrator' : 'Verified Citizen'}</small></span>
               <ChevronRight size={16} />
             </button>
-            <button className="preview-link" onClick={onPreview}><span>19</span> UI screens</button>
+            <button className="preview-link" onClick={onPreview}><span>21</span> UI screens</button>
           </div>
         </header>
         <div className="workspace__content">{children}</div>

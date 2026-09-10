@@ -202,7 +202,7 @@ export function PreviewPage({ navigate }) {
       <div className="ambient ambient--one" />
       <header className="preview-page__header container">
         <Logo onClick={() => navigate('home')} />
-        <div><Badge tone="green">SATURDAY UI UPDATE</Badge><span>19 complete interface screens</span></div>
+        <div><Badge tone="green">SATURDAY UI UPDATE</Badge><span>21 complete interface screens</span></div>
         <Button variant="glass" onClick={() => navigate('home')}>Open product home</Button>
       </header>
       <main className="container preview-page__main">

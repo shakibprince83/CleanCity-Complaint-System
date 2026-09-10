@@ -24,10 +24,12 @@ export const uiScreens = [
     group: 'Administration',
     items: [
       ['admin-dashboard', 'Admin Dashboard', 'System statistics and activity'],
+      ['admin-profile', 'Admin Profile', 'Administrator details and account editing'],
       ['manage-complaints', 'Manage Complaints', 'Search, filter and open complaints'],
       ['edit-complaint', 'Edit Complaint', 'Assignment, status and priority'],
       ['user-management', 'User Management', 'Registered user controls'],
       ['edit-user', 'Edit User', 'Account and verification settings'],
+      ['verification-review', 'Verification Review', 'Review citizen identity information'],
       ['report-authority', 'Report to Authority', 'Formal authority reporting'],
       ['validity-review', 'Validity Review', 'Evidence and trust-score review'],
       ['point-degradation', 'Point Degradation', 'Review and confirm point deduction'],
@@ -119,6 +121,7 @@ export const statusSteps = [
 
 export const adminSidebar = [
   ['admin-dashboard', 'Dashboard'],
+  ['admin-profile', 'My profile'],
   ['manage-complaints', 'Manage complaints'],
   ['user-management', 'User management'],
   ['report-authority', 'Reports'],
