@@ -11,8 +11,8 @@ Administrator screens still use the existing demonstration data.
    `supabase/migrations/202609110001_create_citizen_profiles.sql`, and run it.
 3. Create another query, paste the contents of
    `supabase/migrations/202609120001_create_citizen_dashboard_data.sql`, and run
-   it. Run the migrations in this order because the dashboard migration uses
-   the profile migration's updated-at function.
+   it. The query creates the `complaints` and `notifications` tables, security
+   policies, triggers, and refreshes the Supabase API schema cache.
 4. Open **Project Settings > API** and copy the Project URL and Publishable key.
 5. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
    Never use the `service_role` key in this frontend.
@@ -24,6 +24,11 @@ VITE_DEMO_MODE=true
 ```
 
 Restart the Vite development server after changing environment variables.
+
+If the complaint form reports that `public.complaints` cannot be found, the
+dashboard migration above has not been applied to the same Supabase project
+used by `.env.local`. Run it in SQL Editor, verify both tables appear in Table
+Editor, and refresh the browser.
 
 ## 2. Configure authentication URLs
 

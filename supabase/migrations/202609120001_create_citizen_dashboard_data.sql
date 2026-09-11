@@ -2,6 +2,18 @@
 create extension if not exists pgcrypto;
 create sequence if not exists public.complaint_reference_seq start 24103;
 
+-- Keep this migration runnable even when the profile migration was not applied first.
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+security invoker set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
 create table if not exists public.complaints (
   id uuid primary key default gen_random_uuid(),
   reference text not null unique default ('CC-' || nextval('public.complaint_reference_seq')),
@@ -66,3 +78,6 @@ grant select, insert on table public.complaints to authenticated;
 grant select on table public.notifications to authenticated;
 grant update (read_at) on table public.notifications to authenticated;
 grant usage, select on sequence public.complaint_reference_seq to authenticated;
+
+-- Ask Supabase PostgREST to discover the new tables immediately.
+notify pgrst, 'reload schema';

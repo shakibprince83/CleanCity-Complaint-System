@@ -5,6 +5,17 @@ import { useAuth } from "./AuthContext";
 
 const CitizenDataContext = React.createContext(null);
 
+const complaintErrorMessage = (error) => {
+  if (
+    error?.code === "PGRST205" ||
+    error?.message?.includes("schema cache") ||
+    error?.message?.includes("public.complaints")
+  ) {
+    return "Complaint service is being configured. Please try again after the database setup is completed.";
+  }
+  return error?.message || "The complaint could not be submitted. Please try again.";
+};
+
 const formatDate = (value) => value ? new Intl.DateTimeFormat("en-GB", {
   day: "2-digit", month: "short", year: "numeric",
 }).format(new Date(value)) : "";
@@ -64,7 +75,7 @@ export function CitizenDataProvider({ children }) {
       latitude: payload.latitude, longitude: payload.longitude,
       priority: payload.category === "Emergency" ? "Urgent" : "Normal",
     }).select("*").single();
-    if (insertError) throw insertError;
+    if (insertError) throw new Error(complaintErrorMessage(insertError));
     const complaint = toComplaint(data);
     setComplaints((current) => [complaint, ...current]);
     await refresh();
