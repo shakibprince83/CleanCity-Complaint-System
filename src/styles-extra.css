@@ -843,6 +843,30 @@ html[data-theme='light'] .edit-layout .security-list strong { color: #173e2a; }
 }
 html[data-theme='light'] .report-summary > span:not(.badge),
 html[data-theme='light'] .report-history small { color: #476454; }
+
+.validity-review-page .page-heading .eyebrow { font-size: 11px; }
+.validity-review-page .page-heading h1 { font-size: 34px; }
+.validity-review-page .page-heading p { font-size: 12px; }
+.validity-review-page .panel__header h2 { font-size: 15px; }
+.validity-review-page .review-hero h2 { font-size: 20px; }
+.validity-review-page .review-hero p { font-size: 10.5px; }
+.validity-review-page .confidence > span strong { font-size: 30px; }
+.validity-review-page .confidence > span small,
+.validity-review-page .confidence > small { font-size: 9.5px; }
+.validity-review-page .checklist article { padding-block: 14px; }
+.validity-review-page .checklist strong { font-size: 11.5px; }
+.validity-review-page .checklist small { margin-top: 2px; font-size: 9.5px; }
+.validity-review-page .snapshot-photo span { font-size: 9.5px; }
+.validity-review-page .snapshot-grid > div:last-child p { font-size: 11.5px; }
+.validity-review-page .snapshot-grid > div:last-child span { font-size: 10.5px; }
+.validity-review-page .trust-profile h3 { font-size: 16px; }
+.validity-review-page .trust-profile p { font-size: 10.5px; }
+.validity-review-page .trust-facts small { font-size: 8.5px; }
+.validity-review-page .trust-facts strong { font-size: 12.5px; }
+.validity-review-page .fairness-card strong { font-size: 12px; }
+.validity-review-page .fairness-card p { font-size: 10px; line-height: 1.55; }
+.validity-review-page .badge { font-size: 9px; }
+.validity-review-page .button { font-size: 11.5px; }
 @media (max-width: 940px) { .verification-review-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .verification-review-actions { flex-direction: column; }.verification-review-actions .button { width: 100%; } }
 .gps-ready-text { margin-left: auto; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .45px; white-space: nowrap; }

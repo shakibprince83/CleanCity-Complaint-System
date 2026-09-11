@@ -264,6 +264,7 @@ export function ValidityReview({ navigate, complaint }) {
   ];
   return (
     <Shell screen="admin-dashboard" navigate={navigate}>
+      <div className="validity-review-page">
       <PageHeading eyebrow="VALIDITY REVIEW · 01 OF 07" title="Review complaint validity" description="Check the evidence and reporter record before confirming the complaint." actions={<Badge tone="gold">REVIEW QUEUE</Badge>} />
       <div className="review-layout">
         <div className="review-main">
@@ -276,6 +277,7 @@ export function ValidityReview({ navigate, complaint }) {
           <Panel className="fairness-card"><span><ShieldCheck size={21} /></span><div><strong>Fairness check</strong><p>Base the decision only on complaint evidence and consistency. Trust score is supporting information.</p></div></Panel>
           <Panel title="Review decision"><Button className="button--full" icon={CheckCircle2} onClick={() => navigate('edit-complaint')}>Confirm as valid</Button><Button variant="danger-soft" className="button--full" icon={ShieldAlert} onClick={() => navigate('point-degradation')}>Apply point penalty</Button></Panel>
         </div>
+      </div>
       </div>
     </Shell>
   );
