@@ -1,23 +1,31 @@
 <!doctype html>
+<!-- CleanCity application document shell. React renders the interface inside #root. -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#071a12" />
-    <meta name="description" content="CleanCity waste and civic complaint management interface" />
+    <meta
+      name="description"
+      content="CleanCity waste and civic complaint management interface"
+    />
     <title>CleanCity Complaint System</title>
     <script>
       (() => {
         try {
-          const savedTheme = localStorage.getItem('cleancity-theme');
-          document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark';
+          const savedTheme = localStorage.getItem("cleancity-theme");
+          document.documentElement.dataset.theme =
+            savedTheme === "light" ? "light" : "dark";
         } catch {
-          document.documentElement.dataset.theme = 'dark';
+          document.documentElement.dataset.theme = "dark";
         }
       })();
     </script>
     <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
   </head>
   <body>
     <div id="root"></div>
