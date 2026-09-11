@@ -68,7 +68,7 @@ const Shell = ({ screen, navigate, children }) => (
   </AppShell>
 );
 
-export function CitizenDashboard({ navigate, complaints }) {
+export function CitizenDashboard({ navigate, complaints, dataLoading, dataError }) {
   const { user, profile, profileLoading } = useAuth();
   const recent = complaints.slice(0, 4);
   const displayName = profile?.full_name || user?.email || "Citizen";
@@ -88,6 +88,25 @@ export function CitizenDashboard({ navigate, complaints }) {
   const pending = complaints.filter((item) =>
     ["Pending", "Under Review"].includes(item.status),
   ).length;
+  const resolutionRate = totalComplaints
+    ? Math.round((resolved / totalComplaints) * 100)
+    : 0;
+  const recentCutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const dailyActivity = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (6 - index));
+    const nextDay = new Date(day);
+    nextDay.setDate(day.getDate() + 1);
+    return complaints.filter((item) => {
+      const created = new Date(item.createdAt).getTime();
+      return created >= day.getTime() && created < nextDay.getTime();
+    }).length;
+  });
+  const recentResolved = complaints.filter((item) =>
+    item.status === "Resolved" && new Date(item.createdAt).getTime() >= recentCutoff
+  ).length;
+  const maxDailyActivity = Math.max(...dailyActivity, 1);
 
   return (
     <Shell screen="citizen-dashboard" navigate={navigate}>
@@ -107,6 +126,8 @@ export function CitizenDashboard({ navigate, complaints }) {
           </Button>
         }
       />
+
+      {dataError && <div className="form-alert form-alert--error">{dataError}</div>}
 
       <div className="stats-grid">
         <StatCard
@@ -137,7 +158,7 @@ export function CitizenDashboard({ navigate, complaints }) {
         <StatCard
           label="Pending review"
           value={String(pending).padStart(2, "0")}
-          note="Usually reviewed in 2 hours"
+          note={pending ? "Waiting for administrative review" : "No reports waiting for review"}
           icon={Clock}
           tone="gold"
         />
@@ -153,8 +174,11 @@ export function CitizenDashboard({ navigate, complaints }) {
           }
           className="span-2"
         >
-          <div className="complaint-list">
-            {recent.map((item) => (
+          {dataLoading ? (
+            <EmptyState title="Loading complaints…" description="Fetching your latest records securely." />
+          ) : recent.length ? (
+            <div className="complaint-list">
+              {recent.map((item) => (
               <button
                 key={item.id}
                 className="complaint-row"
@@ -182,25 +206,30 @@ export function CitizenDashboard({ navigate, complaints }) {
                 <StatusBadge status={item.status} />
                 <ChevronRight size={18} />
               </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="No complaints yet" description="Your submitted complaints will appear here." />
+          )}
         </Panel>
 
         <Panel title="Neighbourhood impact" className="impact-panel">
           <div className="impact-score">
-            <TrustRing value={78} label="cleaner" />
+            <TrustRing value={resolutionRate} label="resolved" />
             <div>
-              <Badge tone="green">+12% THIS MONTH</Badge>
+              <Badge tone="green">{recentResolved} RESOLVED IN 7 DAYS</Badge>
               <h3>Your reports matter</h3>
               <p>
-                Eight verified issues around your area were resolved this month.
+                {resolved
+                  ? `${resolved} of your submitted issues ${resolved === 1 ? "has" : "have"} been resolved.`
+                  : "No submitted issues have been resolved yet."}
               </p>
             </div>
           </div>
           <div className="micro-bars">
-            {[38, 52, 44, 73, 58, 84, 69].map((height, index) => (
-              <i key={index} style={{ height: `${height}%` }}>
-                <span>{["S", "M", "T", "W", "T", "F", "S"][index]}</span>
+            {dailyActivity.map((count, index) => (
+              <i key={index} style={{ height: `${Math.max(8, (count / maxDailyActivity) * 100)}%` }}>
+                <span>{new Intl.DateTimeFormat("en", { weekday: "narrow" }).format(new Date(Date.now() - ((6 - index) * 86400000)))}</span>
               </i>
             ))}
           </div>
@@ -241,30 +270,36 @@ export function SubmitComplaint({
   addComplaint,
   showToast,
 }) {
+  const { profile } = useAuth();
   const [category, setCategory] = React.useState("Waste");
   const [equipment, setEquipment] = React.useState(false);
   const [preview, setPreview] = React.useState(null);
-  const [title, setTitle] = React.useState(
-    "Overflowing waste beside the local market",
-  );
-  const [description, setDescription] = React.useState(
-    "Waste has remained beside the public market and is blocking the pedestrian path.",
-  );
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const upload = (event) => {
     const file = event.target.files?.[0];
     if (file) setPreview(URL.createObjectURL(file));
   };
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    addComplaint({
-      title,
-      description,
-      category,
-      location: "Demo Road A, Ward 01",
-    });
-    showToast("Complaint submitted. ID CC-24102 has been created.");
-    navigate("submission-confirmation");
+    setSubmitting(true);
+    setError("");
+    try {
+      const complaint = await addComplaint({
+        title, description, category,
+        location: profile?.residential_address || "Location selected on map",
+        latitude: location[0], longitude: location[1],
+      });
+      showToast(`Complaint submitted. ID ${complaint.id} has been created.`);
+      navigate("submission-confirmation");
+    } catch (submitError) {
+      setError(submitError.message || "The complaint could not be submitted.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const categories = [
@@ -286,6 +321,7 @@ export function SubmitComplaint({
         }
       />
       <form className="complaint-form" onSubmit={submit}>
+        {error && <div className="form-alert form-alert--error span-2">{error}</div>}
         <Panel title="1. What happened?" className="form-section span-2">
           <div className="category-grid">
             {categories.map(([name, Icon, text]) => (
@@ -409,8 +445,8 @@ export function SubmitComplaint({
             <div>
               <MapPin size={18} />
               <span>
-                <strong>Demo Road A</strong>
-                <small>Ward 01, Demo Zone</small>
+                <strong>{profile?.residential_address || "Selected map location"}</strong>
+                <small>{location[0]}, {location[1]}</small>
               </span>
             </div>
             <Badge tone="green">WITHIN 5 KM</Badge>
@@ -444,8 +480,8 @@ export function SubmitComplaint({
             >
               Save for later
             </Button>
-            <Button type="submit" icon={Navigation}>
-              Submit complaint
+            <Button type="submit" icon={Navigation} disabled={submitting}>
+              {submitting ? "Submitting…" : "Submit complaint"}
             </Button>
           </div>
         </div>

@@ -2,7 +2,8 @@
 import React from "react";
 import { ThemeToggle, Toast } from "./components/Common";
 import { useAuth } from "./context/AuthContext";
-import { complaintsSeed, notificationsSeed, usersSeed } from "./data";
+import { useCitizenData } from "./context/CitizenDataContext";
+import { complaintsSeed, usersSeed } from "./data";
 import {
   HomePage,
   LoginPage,
@@ -77,13 +78,20 @@ function screenFromHash() {
 
 export default function App() {
   const { user, loading: authLoading } = useAuth();
+  const {
+    complaints: citizenComplaints,
+    notifications,
+    loading: citizenDataLoading,
+    error: citizenDataError,
+    addComplaint,
+    markAllRead,
+  } = useCitizenData();
   // Shared interface state used by the public, citizen and administrator pages.
   const [screen, setScreen] = React.useState(screenFromHash);
   const [theme, setTheme] = React.useState(
     () => document.documentElement.dataset.theme || "dark",
   );
-  const [complaints, setComplaints] = React.useState(complaintsSeed);
-  const [notifications, setNotifications] = React.useState(notificationsSeed);
+  const [adminComplaints] = React.useState(complaintsSeed);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
   const [toast, setToast] = React.useState("");
 
@@ -135,29 +143,9 @@ export default function App() {
     setTheme((current) => (current === "dark" ? "light" : "dark"));
   }, []);
 
-  const addComplaint = React.useCallback((payload) => {
-    const complaint = {
-      id: "CC-24102",
-      date: "10 Sep 2026",
-      status: "Pending",
-      priority: payload.category === "Emergency" ? "Urgent" : "Normal",
-      ...payload,
-    };
-    setComplaints((current) => [
-      complaint,
-      ...current.filter((item) => item.id !== complaint.id),
-    ]);
-  }, []);
-
-  const markAllRead = React.useCallback(() => {
-    setNotifications((current) =>
-      current.map((item) => ({ ...item, unread: false })),
-    );
-    showToast("All notifications marked as read");
-  }, [showToast]);
-
   const shared = { navigate, showToast };
-  const activeComplaint = complaints[0];
+  const activeComplaint = citizenComplaints[0];
+  const activeAdminComplaint = adminComplaints[0];
   const activeUser = usersSeed[0];
   const displayScreen =
     protectedCitizenScreens.has(screen) && !user ? "login" : screen;
@@ -169,12 +157,16 @@ export default function App() {
     register: <RegistrationPage {...shared} />,
     login: <LoginPage {...shared} />,
     "citizen-dashboard": (
-      <CitizenDashboard {...shared} complaints={complaints} />
+      <CitizenDashboard
+        {...shared}
+        complaints={citizenComplaints}
+        dataLoading={citizenDataLoading}
+        dataError={citizenDataError}
+      />
     ),
     "submit-complaint": (
       <SubmitComplaint
         {...shared}
-        complaints={complaints}
         location={location}
         addComplaint={addComplaint}
       />
@@ -189,32 +181,35 @@ export default function App() {
     "submission-confirmation": (
       <SubmissionConfirmation {...shared} complaint={activeComplaint} />
     ),
-    "my-complaints": <MyComplaints {...shared} complaints={complaints} />,
+    "my-complaints": <MyComplaints {...shared} complaints={citizenComplaints} />,
     "complaint-details": (
       <ComplaintDetails {...shared} complaint={activeComplaint} />
     ),
-    profile: <ProfilePage {...shared} complaints={complaints} />,
+    profile: <ProfilePage {...shared} complaints={citizenComplaints} />,
     notifications: (
       <NotificationsPage
         {...shared}
         notifications={notifications}
-        markAllRead={markAllRead}
+        markAllRead={async () => {
+          await markAllRead();
+          showToast("All notifications marked as read");
+        }}
       />
     ),
-    "admin-dashboard": <AdminDashboard {...shared} complaints={complaints} />,
+    "admin-dashboard": <AdminDashboard {...shared} complaints={adminComplaints} />,
     "admin-profile": <AdminProfile {...shared} />,
     "manage-complaints": (
-      <ManageComplaints {...shared} complaints={complaints} />
+      <ManageComplaints {...shared} complaints={adminComplaints} />
     ),
-    "edit-complaint": <EditComplaint {...shared} complaint={activeComplaint} />,
+    "edit-complaint": <EditComplaint {...shared} complaint={activeAdminComplaint} />,
     "user-management": <UserManagement {...shared} users={usersSeed} />,
     "edit-user": <EditUser {...shared} user={activeUser} />,
     "verification-review": <VerificationReview {...shared} user={activeUser} />,
     "report-authority": (
-      <ReportAuthority {...shared} complaint={activeComplaint} />
+      <ReportAuthority {...shared} complaint={activeAdminComplaint} />
     ),
     "validity-review": (
-      <ValidityReview {...shared} complaint={activeComplaint} />
+      <ValidityReview {...shared} complaint={activeAdminComplaint} />
     ),
     "point-degradation": <PointDegradation {...shared} />,
   };

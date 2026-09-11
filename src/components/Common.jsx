@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { adminSidebar, citizenSidebar } from "../data";
 import { useAuth } from "../context/AuthContext";
+import { useCitizenData } from "../context/CitizenDataContext";
 
 const iconMap = {
   "citizen-dashboard": LayoutDashboard,
@@ -218,6 +219,12 @@ export function Panel({ children, className = "", title, action }) {
 
 function SideNav({ type, active, navigate, open, close, onSignOut }) {
   const items = type === "admin" ? adminSidebar : citizenSidebar;
+  const { complaints, notifications } = useCitizenData();
+  const unreadCount = notifications.filter((item) => item.unread).length;
+  const resolvedCount = complaints.filter((item) => item.status === "Resolved").length;
+  const resolutionRate = complaints.length
+    ? Math.round((resolvedCount / complaints.length) * 100)
+    : 0;
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
       <div className="sidebar__head">
@@ -246,7 +253,9 @@ function SideNav({ type, active, navigate, open, close, onSignOut }) {
             >
               <Icon size={19} />
               <span>{label}</span>
-              {id === "notifications" && <span className="nav-count">2</span>}
+              {id === "notifications" && unreadCount > 0 && (
+                <span className="nav-count">{unreadCount}</span>
+              )}
             </button>
           );
         })}
@@ -269,11 +278,11 @@ function SideNav({ type, active, navigate, open, close, onSignOut }) {
         <span>
           <Leaf size={16} /> Cleaner city impact
         </span>
-        <strong>78%</strong>
+        <strong>{resolutionRate}%</strong>
         <div>
-          <i />
+          <i style={{ width: `${resolutionRate}%` }} />
         </div>
-        <small>12 verified reports this month</small>
+        <small>{resolvedCount} resolved {resolvedCount === 1 ? "report" : "reports"}</small>
       </div>
     </aside>
   );
@@ -372,9 +381,11 @@ export function AppShell({
               </span>
               <ChevronRight size={16} />
             </button>
-            <button className="preview-link" onClick={onPreview}>
-              <span>21</span> UI screens
-            </button>
+            {type === "admin" && (
+              <button className="preview-link" onClick={onPreview}>
+                <span>21</span> UI screens
+              </button>
+            )}
           </div>
         </header>
         <div className="workspace__content">{children}</div>

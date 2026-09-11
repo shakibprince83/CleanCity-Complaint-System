@@ -1,16 +1,20 @@
 # CleanCity Supabase setup
 
 The application uses Supabase Auth for citizen accounts and PostgreSQL for
-citizen profiles. Complaint and administrator screens still use the existing
-demonstration data.
+citizen profiles, complaints, notifications, and citizen dashboard statistics.
+Administrator screens still use the existing demonstration data.
 
 ## 1. Create and configure the project
 
 1. Create a project in the Supabase Dashboard.
 2. Open **SQL Editor**, create a new query, paste the contents of
    `supabase/migrations/202609110001_create_citizen_profiles.sql`, and run it.
-3. Open **Project Settings > API** and copy the Project URL and Publishable key.
-4. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
+3. Create another query, paste the contents of
+   `supabase/migrations/202609120001_create_citizen_dashboard_data.sql`, and run
+   it. Run the migrations in this order because the dashboard migration uses
+   the profile migration's updated-at function.
+4. Open **Project Settings > API** and copy the Project URL and Publishable key.
+5. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
    Never use the `service_role` key in this frontend.
 
 ```env
@@ -47,7 +51,11 @@ For real email delivery, configure a custom SMTP provider before production.
 3. Log in and open the Profile page.
 4. Edit the name, phone, address, language, and notification preference.
 5. Confirm the changes appear in **Table Editor > profiles**.
-6. Sign out and verify that citizen routes redirect to Login.
+6. Submit a complaint and confirm a row appears in **Table Editor > complaints**
+   and **Table Editor > notifications**.
+7. Confirm the citizen dashboard uses those rows and shows zero instead of
+   sample records for a citizen who has not submitted a complaint.
+8. Sign out and verify that citizen routes redirect to Login.
 
 The full NID is not stored. Only its final four numeric characters are retained,
 and the citizen cannot change protected fields such as role, account status,
