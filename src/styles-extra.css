@@ -887,6 +887,16 @@ html[data-theme='light'] .report-history small { color: #476454; }
 .penalty-actions .button { font-size: 11.5px; }
 .penalty-footnote { color: #8da99a; font-size: 9.5px; }
 html[data-theme='light'] .penalty-footnote { color: #527461; }
+
+.penalty-reference small { font-size: 10px; font-weight: 650; }
+.penalty-reference strong { font-size: 13px; }
+.point-calculation strong { font-size: 34px; }
+.point-calculation small { font-size: 11px; font-weight: 600; }
+.rule-card strong { font-size: 13px; }
+.rule-card small { font-size: 11px; }
+.appeal-check strong { font-size: 13px; }
+.appeal-check small { font-size: 11px; }
+.penalty-footnote { font-size: 10.5px; font-weight: 550; }
 @media (max-width: 940px) { .verification-review-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .verification-review-actions { flex-direction: column; }.verification-review-actions .button { width: 100%; } }
 .gps-ready-text { margin-left: auto; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .45px; white-space: nowrap; }
