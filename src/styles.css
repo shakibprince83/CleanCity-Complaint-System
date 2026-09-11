@@ -1,4 +1,16 @@
-/* Core design system: theme variables, shared components and page layouts. */
+/*
+ * CSS PAGE AND FUNCTION MAP
+ *
+ * Theme foundation — used on every page for colors, typography and reset rules.
+ * Shared elements — used on every page for buttons, badges, cards and form fields.
+ * Home page — public navigation, hero content, statistics and map preview.
+ * Registration, Login and UI Directory — authentication and screen-directory layouts.
+ * Citizen and Admin shells — sidebars, top bars and shared workspace structure.
+ * Dashboards and activity pages — charts, lists, notifications and summary cards.
+ * Complaint workflow — complaint form, location map and supporting controls.
+ * Admin data pages — complaint/user tables, filters and pagination.
+ * Detail and profile pages — complaint details, profiles and administration forms.
+ */
 :root {
   color-scheme: dark;
   font-family:
@@ -112,7 +124,7 @@ p {
   background: rgba(104, 183, 255, 0.06);
 }
 
-/* Shared elements */
+/* SHARED — All pages: branding, buttons, badges, cards and form controls. */
 .brand {
   display: inline-flex;
   align-items: center;
@@ -550,7 +562,7 @@ select:focus {
   text-transform: uppercase;
 }
 
-/* Public landing */
+/* PAGE — Home: public header, hero, calls to action, statistics and map preview. */
 .public-page {
   min-height: 100vh;
   overflow: hidden;
@@ -895,7 +907,7 @@ select:focus {
   font-size: 11px;
 }
 
-/* Authentication and preview directory */
+/* PAGES — Registration, Login and UI Directory: authentication and screen cards. */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -1283,7 +1295,7 @@ select:focus {
   font-weight: 750;
 }
 
-/* App navigation and dashboard framework */
+/* SHARED LAYOUT — Citizen and Admin pages: sidebar, top bar and workspace shell. */
 .app-shell {
   min-height: 100vh;
   display: grid;
@@ -1663,7 +1675,7 @@ select:focus {
   min-height: 250px;
 }
 
-/* Lists, charts and dashboard cards */
+/* PAGES — Citizen/Admin dashboards, complaint activity, notifications and summaries. */
 .complaint-list {
   display: grid;
   gap: 4px;
@@ -2050,7 +2062,7 @@ select:focus {
   font-size: 10px;
 }
 
-/* Complaint forms and maps */
+/* PAGES — Submit Complaint and Location Selection: forms, uploads and map controls. */
 .complaint-form {
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;
@@ -2491,7 +2503,7 @@ select:focus {
   margin-top: 3px;
 }
 
-/* Tables */
+/* PAGES — Manage Complaints and User Management: filters, tables and pagination. */
 .table-panel {
   padding: 0;
 }
@@ -2711,7 +2723,7 @@ select:focus {
   color: var(--muted);
 }
 
-/* Detail, profile and administration screens */
+/* PAGES — Complaint Details, Profile, Edit Complaint/User and administration views. */
 .details-grid {
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;

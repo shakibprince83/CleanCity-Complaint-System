@@ -1,4 +1,19 @@
-/* Extended page layouts, responsive rules and light/dark theme refinements. */
+/*
+ * CSS PAGE AND FUNCTION MAP
+ *
+ * Report to Authority — report form, attachment, summary and report history.
+ * Validity Review — evidence checks, confidence, reporter trust and decisions.
+ * Point Degradation — penalty confirmation, trust points and appeal acknowledgement.
+ * Submission Confirmation — success message, complaint ID and follow-up actions.
+ * Shared feedback — modal dialogs and toast notifications used across the app.
+ * Responsive behavior — mobile/tablet layout adjustments for all affected pages.
+ * Theme behavior — light/dark contrast, surfaces and persistent theme control.
+ * Verification and Admin Profile — verification review and administrator details.
+ * Shared administration — pagination, activity history and global page footer.
+ * Page refinements — map status, report readability and penalty readability.
+ */
+
+/* PAGE — Report to Authority: two-column report form, summary and history panels. */
 .report-layout {
   display: grid;
   grid-template-columns: 1.35fr 0.65fr;
@@ -73,6 +88,7 @@
   display: grid;
 }
 
+/* PAGE — Validity Review: evidence checklist, complaint snapshot and trust score. */
 .review-layout {
   display: grid;
   grid-template-columns: 1.3fr 0.7fr;
@@ -252,6 +268,7 @@
   gap: 9px;
 }
 
+/* PAGE — Point Degradation: confirmation card, point change and appeal controls. */
 .confirmation-stage {
   position: relative;
   min-height: calc(100vh - 175px);
@@ -433,6 +450,7 @@
   font-size: 8px;
 }
 
+/* PAGE — Submission Confirmation: success state, complaint summary and actions. */
 .success-stage {
   position: relative;
   min-height: calc(100vh - 175px);
@@ -614,6 +632,7 @@
   color: var(--primary);
 }
 
+/* SHARED — Application feedback: modal dialog layer and toast notifications. */
 .modal-layer {
   position: fixed;
   z-index: 1000;
@@ -680,6 +699,7 @@
   }
 }
 
+/* RESPONSIVE — All applicable pages: desktop-to-tablet layout adjustments. */
 @media (max-width: 1180px) {
   .preview-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -727,6 +747,7 @@
   }
 }
 
+/* RESPONSIVE — All applicable pages: tablet navigation and stacked layouts. */
 @media (max-width: 940px) {
   .public-nav nav {
     display: none;
@@ -820,6 +841,7 @@
   }
 }
 
+/* RESPONSIVE — All applicable pages: mobile cards, forms and action controls. */
 @media (max-width: 720px) {
   .container {
     width: min(100% - 28px, 1180px);
@@ -1048,6 +1070,7 @@
   }
 }
 
+/* RESPONSIVE — All applicable pages: compact-phone typography and spacing. */
 @media (max-width: 480px) {
   .preview-grid {
     grid-template-columns: 1fr;
@@ -2223,6 +2246,7 @@ html[data-theme="light"] .hero__visual .floating-card .mini-progress::before {
   background: #123f2c;
 }
 
+/* PAGE — User Verification Review: verification date, evidence and review actions. */
 .verification-date {
   margin: 1px 0 15px;
   color: var(--primary);
@@ -2291,6 +2315,7 @@ html[data-theme="light"] .admin-profile-layout .security-list strong {
   color: #173e2a;
 }
 
+/* SHARED — Admin tables: result count and previous/next page controls. */
 .pagination {
   min-height: 72px;
   padding: 18px 24px;
@@ -2308,6 +2333,7 @@ html[data-theme="light"] .admin-profile-layout .security-list strong {
   font-weight: 700;
 }
 
+/* SHARED — All pages: Team Void copyright footer. */
 .site-footer {
   position: relative;
   z-index: 2;
@@ -2336,6 +2362,7 @@ html[data-theme="light"] .assignee-card .availability-text {
   color: #117342;
 }
 
+/* PAGE — Edit Complaint: administrative activity-history timeline. */
 .admin-history {
   gap: 4px;
 }
@@ -2615,6 +2642,7 @@ html[data-theme="light"] .penalty-footnote {
     width: 100%;
   }
 }
+/* PAGE — Location Selection: plain GPS readiness status text. */
 .gps-ready-text {
   margin-left: auto;
   color: var(--primary);
