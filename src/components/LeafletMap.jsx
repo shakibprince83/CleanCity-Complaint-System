@@ -8,11 +8,13 @@ const DEFAULT_POSITION = [23.7808, 90.4071];
 export default function LeafletMap({
   value = DEFAULT_POSITION,
   onChange = () => {},
+  onAddressChange = () => {},
 }) {
   const mapNode = React.useRef(null);
   const mapInstance = React.useRef(null);
   const markerInstance = React.useRef(null);
   const onChangeRef = React.useRef(onChange);
+  const onAddressChangeRef = React.useRef(onAddressChange);
   const [ready, setReady] = React.useState(false);
   const [message, setMessage] = React.useState(
     "Drag the marker to set the exact location",
@@ -21,6 +23,29 @@ export default function LeafletMap({
   React.useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  React.useEffect(() => {
+    onAddressChangeRef.current = onAddressChange;
+  }, [onAddressChange]);
+
+  const resolveAddress = React.useCallback(async ([latitude, longitude]) => {
+    setMessage("Fetching address from the selected map location...");
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+        { headers: { Accept: "application/json" } },
+      );
+      if (!response.ok) throw new Error("Address lookup failed");
+      const data = await response.json();
+      const address = data.display_name?.trim();
+      if (!address) throw new Error("No address was returned");
+      onAddressChangeRef.current(address);
+      setMessage("Address fetched from OpenStreetMap");
+    } catch {
+      onAddressChangeRef.current("");
+      setMessage("Coordinates selected. You can enter the address manually.");
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!mapNode.current || mapInstance.current || !window.L) return undefined;
@@ -55,12 +80,13 @@ export default function LeafletMap({
       const point = marker.getLatLng();
       const next = [Number(point.lat.toFixed(6)), Number(point.lng.toFixed(6))];
       onChangeRef.current(next);
-      setMessage("Location updated from the map marker");
+      resolveAddress(next);
     });
 
     mapInstance.current = map;
     markerInstance.current = marker;
     setReady(true);
+    resolveAddress(value);
 
     const resizeTimer = setTimeout(() => map.invalidateSize(), 120);
     return () => {
@@ -69,7 +95,7 @@ export default function LeafletMap({
       mapInstance.current = null;
       markerInstance.current = null;
     };
-  }, []);
+  }, [resolveAddress]);
 
   const locate = () => {
     if (!navigator.geolocation) {
@@ -86,9 +112,10 @@ export default function LeafletMap({
           Number(coords.longitude.toFixed(6)),
         ];
         onChange(next);
+        onChangeRef.current(next);
         markerInstance.current?.setLatLng(next);
         mapInstance.current?.flyTo(next, 16, { duration: 1.2 });
-        setMessage("Current location selected successfully");
+        resolveAddress(next);
       },
       () =>
         setMessage(

@@ -82,7 +82,6 @@ export default function App() {
     complaints: citizenComplaints,
     notifications,
     loading: citizenDataLoading,
-    error: citizenDataError,
     addComplaint,
     markAllRead,
   } = useCitizenData();
@@ -93,6 +92,7 @@ export default function App() {
   );
   const [adminComplaints] = React.useState(complaintsSeed);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
+  const [locationAddress, setLocationAddress] = React.useState("");
   const [toast, setToast] = React.useState("");
 
   React.useEffect(() => {
@@ -161,13 +161,13 @@ export default function App() {
         {...shared}
         complaints={citizenComplaints}
         dataLoading={citizenDataLoading}
-        dataError={citizenDataError}
       />
     ),
     "submit-complaint": (
       <SubmitComplaint
         {...shared}
         location={location}
+        locationAddress={locationAddress}
         addComplaint={addComplaint}
       />
     ),
@@ -176,6 +176,8 @@ export default function App() {
         {...shared}
         location={location}
         setLocation={setLocation}
+        address={locationAddress}
+        setAddress={setLocationAddress}
       />
     ),
     "submission-confirmation": (

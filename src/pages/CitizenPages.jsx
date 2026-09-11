@@ -68,7 +68,7 @@ const Shell = ({ screen, navigate, children }) => (
   </AppShell>
 );
 
-export function CitizenDashboard({ navigate, complaints, dataLoading, dataError }) {
+export function CitizenDashboard({ navigate, complaints, dataLoading }) {
   const { user, profile, profileLoading } = useAuth();
   const recent = complaints.slice(0, 4);
   const displayName = profile?.full_name || user?.email || "Citizen";
@@ -126,8 +126,6 @@ export function CitizenDashboard({ navigate, complaints, dataLoading, dataError 
           </Button>
         }
       />
-
-      {dataError && <div className="form-alert form-alert--error">{dataError}</div>}
 
       <div className="stats-grid">
         <StatCard
@@ -267,6 +265,7 @@ export function CitizenDashboard({ navigate, complaints, dataLoading, dataError 
 export function SubmitComplaint({
   navigate,
   location,
+  locationAddress,
   addComplaint,
   showToast,
 }) {
@@ -290,7 +289,7 @@ export function SubmitComplaint({
     try {
       const complaint = await addComplaint({
         title, description, category,
-        location: profile?.residential_address || "Location selected on map",
+        location: locationAddress || profile?.residential_address || "Selected map location",
         latitude: location[0], longitude: location[1],
       });
       showToast(`Complaint submitted. ID ${complaint.id} has been created.`);
@@ -445,7 +444,7 @@ export function SubmitComplaint({
             <div>
               <MapPin size={18} />
               <span>
-                <strong>{profile?.residential_address || "Selected map location"}</strong>
+                <strong>{locationAddress || profile?.residential_address || "Select a location on the map"}</strong>
                 <small>{location[0]}, {location[1]}</small>
               </span>
             </div>
@@ -494,9 +493,10 @@ export function LocationSelection({
   navigate,
   location,
   setLocation,
+  address,
+  setAddress,
   showToast,
 }) {
-  const [address, setAddress] = React.useState("Demo Road A, Ward 01");
   const confirm = () => {
     showToast("Location confirmed inside the 5 km service area");
     navigate("submit-complaint");
@@ -515,7 +515,11 @@ export function LocationSelection({
       />
       <div className="location-layout">
         <Panel className="location-map-panel">
-          <LeafletMap value={location} onChange={setLocation} />
+          <LeafletMap
+            value={location}
+            onChange={setLocation}
+            onAddressChange={setAddress}
+          />
         </Panel>
         <Panel title="Location details" className="location-details">
           <div className="coordinate-card">
