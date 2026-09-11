@@ -365,7 +365,9 @@ export function AppShell({
                 <small>
                   {type === "admin"
                     ? "System Administrator"
-                    : "Verified Citizen"}
+                    : profile?.nid_verified
+                      ? "Verified Citizen"
+                      : "Citizen Account"}
                 </small>
               </span>
               <ChevronRight size={16} />

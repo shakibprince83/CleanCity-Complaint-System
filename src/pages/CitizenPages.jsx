@@ -69,13 +69,38 @@ const Shell = ({ screen, navigate, children }) => (
 );
 
 export function CitizenDashboard({ navigate, complaints }) {
+  const { user, profile, profileLoading } = useAuth();
   const recent = complaints.slice(0, 4);
+  const displayName = profile?.full_name || user?.email || "Citizen";
+  const firstName = displayName.includes("@")
+    ? displayName.split("@")[0]
+    : displayName.split(/\s+/)[0];
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const totalComplaints = complaints.length;
+  const inProgress = complaints.filter((item) =>
+    ["In Progress", "Assigned"].includes(item.status),
+  ).length;
+  const resolved = complaints.filter(
+    (item) => item.status === "Resolved",
+  ).length;
+  const pending = complaints.filter((item) =>
+    ["Pending", "Under Review"].includes(item.status),
+  ).length;
+
   return (
     <Shell screen="citizen-dashboard" navigate={navigate}>
       <PageHeading
         eyebrow="CITIZEN OVERVIEW"
-        title="Good morning, Demo Citizen"
-        description="Track your reports and see how your neighbourhood is improving."
+        title={
+          profileLoading ? "Loading your profile…" : `${greeting}, ${firstName}`
+        }
+        description={
+          profile?.residential_address
+            ? `Track reports and service updates for ${profile.residential_address}.`
+            : "Track your reports and see how your neighbourhood is improving."
+        }
         actions={
           <Button icon={Plus} onClick={() => navigate("submit-complaint")}>
             New complaint
@@ -86,28 +111,32 @@ export function CitizenDashboard({ navigate, complaints }) {
       <div className="stats-grid">
         <StatCard
           label="Total complaints"
-          value="12"
-          note="3 added this month"
+          value={String(totalComplaints).padStart(2, "0")}
+          note="Your submitted reports"
           icon={FileText}
           selected
         />
         <StatCard
           label="In progress"
-          value="03"
+          value={String(inProgress).padStart(2, "0")}
           note="Response teams active"
           icon={Wrench}
           tone="blue"
         />
         <StatCard
           label="Resolved"
-          value="08"
-          note="67% resolution rate"
+          value={String(resolved).padStart(2, "0")}
+          note={
+            totalComplaints
+              ? `${Math.round((resolved / totalComplaints) * 100)}% resolution rate`
+              : "No resolved reports yet"
+          }
           icon={CheckCircle2}
           tone="green"
         />
         <StatCard
           label="Pending review"
-          value="01"
+          value={String(pending).padStart(2, "0")}
           note="Usually reviewed in 2 hours"
           icon={Clock}
           tone="gold"
@@ -181,7 +210,8 @@ export function CitizenDashboard({ navigate, complaints }) {
           <MapSnapshot compact />
           <div className="zone-panel__bottom">
             <span>
-              <ShieldCheck size={17} /> Home area is covered
+              <ShieldCheck size={17} />
+              {profile?.residential_address || "Home area is covered"}
             </span>
             <button onClick={() => navigate("location")}>Check location</button>
           </div>
