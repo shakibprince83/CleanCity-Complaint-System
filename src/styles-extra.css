@@ -867,6 +867,26 @@ html[data-theme='light'] .report-history small { color: #476454; }
 .validity-review-page .fairness-card p { font-size: 10px; line-height: 1.55; }
 .validity-review-page .badge { font-size: 9px; }
 .validity-review-page .button { font-size: 11.5px; }
+
+.penalty-card { width: min(740px, 100%); }
+.penalty-card h1 { font-size: 34px; }
+.penalty-card > p { font-size: 12.5px; line-height: 1.6; }
+.penalty-card > .badge { font-size: 9.5px; }
+.penalty-reference { padding: 15px; }
+.penalty-reference small { font-size: 8.5px; }
+.penalty-reference strong { margin-top: 2px; font-size: 11px; }
+.penalty-reference > .badge { font-size: 9.5px; }
+.point-calculation strong { font-size: 28px; }
+.point-calculation small { margin-top: 3px; font-size: 9.5px; }
+.rule-card { padding: 15px; }
+.rule-card strong { font-size: 11.5px; }
+.rule-card small { margin-top: 3px; font-size: 9.5px; line-height: 1.45; }
+.appeal-check { padding: 15px; }
+.appeal-check strong { font-size: 11.5px; }
+.appeal-check small { margin-top: 3px; font-size: 9.5px; line-height: 1.45; }
+.penalty-actions .button { font-size: 11.5px; }
+.penalty-footnote { color: #8da99a; font-size: 9.5px; }
+html[data-theme='light'] .penalty-footnote { color: #527461; }
 @media (max-width: 940px) { .verification-review-layout { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .verification-review-actions { flex-direction: column; }.verification-review-actions .button { width: 100%; } }
 .gps-ready-text { margin-left: auto; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .45px; white-space: nowrap; }
