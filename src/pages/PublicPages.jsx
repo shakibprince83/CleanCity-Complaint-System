@@ -32,7 +32,19 @@ import {
   MapSnapshot,
   Panel,
 } from "../components/Common";
+import { useAuth } from "../context/AuthContext";
 import { uiScreens } from "../data";
+
+function readableAuthError(error) {
+  const message = error?.message || "Something went wrong. Please try again.";
+  if (message.toLowerCase().includes("invalid login credentials")) {
+    return "The email address or password is incorrect.";
+  }
+  if (message.toLowerCase().includes("user already registered")) {
+    return "An account already exists with this email address.";
+  }
+  return message;
+}
 
 export function HomePage({ navigate }) {
   return (
@@ -163,17 +175,64 @@ export function HomePage({ navigate }) {
 }
 
 export function RegistrationPage({ navigate, showToast }) {
+  const { signUp, isConfigured } = useAuth();
   const [role, setRole] = React.useState("Citizen");
   const [showPassword, setShowPassword] = React.useState(false);
-  const [password, setPassword] = React.useState("CleanCity#26");
-  const [confirm, setConfirm] = React.useState("CleanCity#26");
+  const [form, setForm] = React.useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    address: "",
+    nid: "",
+  });
+  const [password, setPassword] = React.useState("");
+  const [confirm, setConfirm] = React.useState("");
   const [verified, setVerified] = React.useState(false);
+  const [accepted, setAccepted] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
 
-  const submit = (event) => {
+  const setField = (field) => (event) => {
+    setForm((current) => ({ ...current, [field]: event.target.value }));
+    if (field === "nid") setVerified(false);
+  };
+
+  const submit = async (event) => {
     event.preventDefault();
-    if (password !== confirm) return;
-    showToast("Demo account created successfully");
-    navigate("citizen-dashboard");
+    setError("");
+
+    if (password.length < 8) {
+      setError("Password must contain at least 8 characters.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("The passwords do not match.");
+      return;
+    }
+    if (!verified) {
+      setError("Please verify the NID format before creating the account.");
+      return;
+    }
+    if (!accepted) {
+      setError("Please accept the service terms to continue.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const data = await signUp({ ...form, password, role });
+      if (data.session) {
+        showToast("Account created successfully");
+        navigate("citizen-dashboard", { authenticated: true });
+      } else {
+        showToast("Account created. Check your email to confirm your account.");
+        navigate("login");
+      }
+    } catch (submitError) {
+      setError(readableAuthError(submitError));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -208,26 +267,47 @@ export function RegistrationPage({ navigate, showToast }) {
           <Field label="Full name">
             <div className="input-wrap">
               <User size={17} />
-              <input required defaultValue="Demo Citizen" />
+              <input
+                required
+                value={form.fullName}
+                onChange={setField("fullName")}
+                autoComplete="name"
+              />
             </div>
           </Field>
           <Field label="Phone number">
             <div className="input-wrap">
               <Phone size={17} />
-              <input required defaultValue="+880 1XXX XXXXXX" />
+              <input
+                required
+                value={form.phone}
+                onChange={setField("phone")}
+                autoComplete="tel"
+              />
             </div>
           </Field>
         </div>
         <Field label="Email address">
           <div className="input-wrap">
             <Mail size={17} />
-            <input type="email" required defaultValue="citizen@example.test" />
+            <input
+              type="email"
+              required
+              value={form.email}
+              onChange={setField("email")}
+              autoComplete="email"
+            />
           </div>
         </Field>
         <Field label="Residential address">
           <div className="input-wrap">
             <MapPin size={17} />
-            <input required defaultValue="Demo Road A, Ward 01" />
+            <input
+              required
+              value={form.address}
+              onChange={setField("address")}
+              autoComplete="street-address"
+            />
           </div>
         </Field>
         <div className="form-grid form-grid--two">
@@ -236,8 +316,10 @@ export function RegistrationPage({ navigate, showToast }) {
               <Lock size={17} />
               <input
                 type={showPassword ? "text" : "password"}
+                required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -263,8 +345,10 @@ export function RegistrationPage({ navigate, showToast }) {
               <KeyRound size={17} />
               <input
                 type="password"
+                required
                 value={confirm}
                 onChange={(event) => setConfirm(event.target.value)}
+                autoComplete="new-password"
               />
               {confirm && password === confirm && <CheckCircle2 size={17} />}
             </div>
@@ -272,33 +356,63 @@ export function RegistrationPage({ navigate, showToast }) {
         </div>
         <Field
           label="National ID number"
-          hint="Used only to verify your citizen account."
+          hint="Only the final four digits are stored. Administrative verification remains pending."
         >
           <div
             className={`verify-row ${verified ? "verify-row--success" : ""}`}
           >
             <div className="input-wrap">
               <BadgeCheck size={17} />
-              <input defaultValue="DEMO-NID-0001" />
+              <input
+                required
+                value={form.nid}
+                onChange={setField("nid")}
+                inputMode="numeric"
+                autoComplete="off"
+              />
             </div>
             <Button
               type="button"
               variant={verified ? "success" : "outline"}
-              onClick={() => setVerified(true)}
+              onClick={() => {
+                const nidLength = form.nid.replace(/\D/g, "").length;
+                if (![10, 13, 17].includes(nidLength)) {
+                  setError("Enter a valid 10, 13 or 17-digit NID number.");
+                  return;
+                }
+                setError("");
+                setVerified(true);
+              }}
             >
-              {verified ? "Verified" : "Verify NID"}
+              {verified ? "Format checked" : "Check NID"}
             </Button>
           </div>
         </Field>
         <label className="check-row">
-          <input type="checkbox" defaultChecked />
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(event) => setAccepted(event.target.checked)}
+          />
           <span>
             I agree to the CleanCity service terms and responsible-reporting
             policy.
           </span>
         </label>
-        <Button className="button--full" type="submit" icon={UserPlus}>
-          Create account
+        {(!isConfigured || error) && (
+          <p className="form-message form-message--error" role="alert">
+            {!isConfigured
+              ? "Supabase setup is required before registration can be used."
+              : error}
+          </p>
+        )}
+        <Button
+          className="button--full"
+          type="submit"
+          icon={UserPlus}
+          disabled={submitting || !isConfigured}
+        >
+          {submitting ? "Creating account…" : "Create account"}
         </Button>
         <p className="auth-switch">
           Already registered?{" "}
@@ -312,11 +426,34 @@ export function RegistrationPage({ navigate, showToast }) {
 }
 
 export function LoginPage({ navigate, showToast }) {
+  const { signIn, isConfigured } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
-  const submit = (event) => {
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const submit = async (event) => {
     event.preventDefault();
-    showToast("Welcome back, Demo Citizen");
-    navigate("citizen-dashboard");
+    setError("");
+    setSubmitting(true);
+    try {
+      await signIn(email, password);
+      let destination = "citizen-dashboard";
+      try {
+        destination =
+          sessionStorage.getItem("cleancity-return-to") || destination;
+        sessionStorage.removeItem("cleancity-return-to");
+      } catch {
+        // Continue to the dashboard if browser storage is unavailable.
+      }
+      showToast("Welcome back to CleanCity");
+      navigate(destination, { authenticated: true });
+    } catch (submitError) {
+      setError(readableAuthError(submitError));
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <AuthLayout
@@ -326,10 +463,16 @@ export function LoginPage({ navigate, showToast }) {
       compact
     >
       <form className="auth-form" onSubmit={submit}>
-        <Field label="Email address or phone number">
+        <Field label="Email address">
           <div className="input-wrap">
             <Mail size={17} />
-            <input required defaultValue="citizen@example.test" />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+            />
           </div>
         </Field>
         <Field label="Password">
@@ -338,7 +481,9 @@ export function LoginPage({ navigate, showToast }) {
             <input
               type={showPassword ? "text" : "password"}
               required
-              defaultValue="CleanCity#26"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -355,8 +500,20 @@ export function LoginPage({ navigate, showToast }) {
           </label>
           <button type="button">Forgot password?</button>
         </div>
-        <Button className="button--full" type="submit">
-          Log in <ArrowRight size={17} />
+        {(!isConfigured || error) && (
+          <p className="form-message form-message--error" role="alert">
+            {!isConfigured
+              ? "Supabase setup is required before login can be used."
+              : error}
+          </p>
+        )}
+        <Button
+          className="button--full"
+          type="submit"
+          disabled={submitting || !isConfigured}
+        >
+          {submitting ? "Logging in…" : "Log in"}{" "}
+          {!submitting && <ArrowRight size={17} />}
         </Button>
         <div className="divider">
           <span>UI demonstration</span>

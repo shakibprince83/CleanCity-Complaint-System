@@ -55,6 +55,7 @@ import {
   TrustRing,
 } from "../components/Common";
 import LeafletMap from "../components/LeafletMap";
+import { useAuth } from "../context/AuthContext";
 import { statusSteps } from "../data";
 
 const Shell = ({ screen, navigate, children }) => (
@@ -821,6 +822,79 @@ export function ComplaintDetails({ navigate, complaint }) {
 }
 
 export function ProfilePage({ navigate, complaints, showToast }) {
+  const { user, profile, profileLoading, updateProfile } = useAuth();
+  const [editing, setEditing] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [form, setForm] = React.useState({
+    fullName: "",
+    phone: "",
+    address: "",
+    preferredLanguage: "English",
+    notificationEnabled: true,
+  });
+
+  React.useEffect(() => {
+    if (!profile) return;
+    setForm({
+      fullName: profile.full_name || "",
+      phone: profile.phone || "",
+      address: profile.residential_address || "",
+      preferredLanguage: profile.preferred_language || "English",
+      notificationEnabled: profile.notification_enabled ?? true,
+    });
+  }, [profile]);
+
+  const setField = (field) => (event) => {
+    const value =
+      event.target.type === "checkbox"
+        ? event.target.checked
+        : event.target.value;
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const save = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (form.fullName.trim().length < 2) {
+      setError("Full name must contain at least two characters.");
+      return;
+    }
+    if (form.phone.trim().length < 7 || form.address.trim().length < 5) {
+      setError("Enter a valid phone number and residential address.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updateProfile(form);
+      setEditing(false);
+      showToast("Profile updated successfully");
+    } catch (saveError) {
+      setError(saveError.message || "Unable to update the profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const displayName = profile?.full_name || user?.email || "CleanCity Citizen";
+  const initials = displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+  const memberSince = profile?.created_at
+    ? new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(profile.created_at))
+    : "—";
+  const nidValue = profile?.nid_last4
+    ? `•••• •••• ${profile.nid_last4}`
+    : "Not provided";
+
   return (
     <Shell screen="profile" navigate={navigate}>
       <PageHeading
@@ -830,25 +904,42 @@ export function ProfilePage({ navigate, complaints, showToast }) {
         actions={
           <Button
             icon={Edit3}
-            onClick={() => showToast("Profile edit mode opened")}
+            onClick={() => {
+              setError("");
+              setEditing((current) => !current);
+            }}
+            disabled={profileLoading || !profile}
           >
-            Edit profile
+            {editing ? "Cancel editing" : "Edit profile"}
           </Button>
         }
       />
+      {profileLoading && (
+        <p className="form-message" role="status">
+          Loading your profile…
+        </p>
+      )}
+      {!profileLoading && !profile && (
+        <p className="form-message form-message--error" role="alert">
+          Your profile could not be loaded. Confirm that the Supabase migration
+          has been applied.
+        </p>
+      )}
       <div className="profile-layout">
         <Panel className="profile-identity">
           <div className="profile-avatar">
-            DC
+            {initials || "C"}
             <span>
               <BadgeCheck size={18} />
             </span>
           </div>
-          <h2>Demo Citizen</h2>
-          <Badge tone="green">VERIFIED CITIZEN</Badge>
-          <p>Member since 19 August 2026</p>
+          <h2>{displayName}</h2>
+          <Badge tone={profile?.nid_verified ? "green" : "gold"}>
+            {profile?.nid_verified ? "VERIFIED CITIZEN" : "CITIZEN ACCOUNT"}
+          </Badge>
+          <p>Member since {memberSince}</p>
           <div className="profile-score">
-            <TrustRing value={86} label="trust score" />
+            <TrustRing value={profile?.trust_score ?? 86} label="trust score" />
             <span>
               <strong>Excellent standing</strong>
               <small>12 verified reports</small>
@@ -857,26 +948,59 @@ export function ProfilePage({ navigate, complaints, showToast }) {
           <div className="profile-contact">
             <span>
               <Mail size={17} />
-              citizen@example.test
+              {user?.email}
             </span>
             <span>
               <Phone size={17} />
-              +880 1XXX XXXXXX
+              {profile?.phone || "Not provided"}
             </span>
             <span>
               <MapPin size={17} />
-              Demo Zone A, Ward 01
+              {profile?.residential_address || "Not provided"}
             </span>
           </div>
         </Panel>
-        <div className="profile-main">
+        <form className="profile-main" onSubmit={save}>
           <Panel title="Account information">
-            <div className="info-grid">
-              <Info label="Full name" value="Demo Citizen" />
-              <Info label="National ID" value="DEMO •••• 0001" />
-              <Info label="Account status" value="Active" badge />
-              <Info label="User type" value="Citizen" />
-            </div>
+            {editing ? (
+              <div className="form-grid form-grid--two profile-edit-grid">
+                <Field label="Full name">
+                  <input
+                    required
+                    value={form.fullName}
+                    onChange={setField("fullName")}
+                  />
+                </Field>
+                <Field label="Email address">
+                  <input value={user?.email || ""} disabled />
+                </Field>
+                <Field label="Phone number">
+                  <input
+                    required
+                    value={form.phone}
+                    onChange={setField("phone")}
+                  />
+                </Field>
+                <Field label="Residential address">
+                  <input
+                    required
+                    value={form.address}
+                    onChange={setField("address")}
+                  />
+                </Field>
+              </div>
+            ) : (
+              <div className="info-grid">
+                <Info label="Full name" value={displayName} />
+                <Info label="National ID" value={nidValue} />
+                <Info
+                  label="Account status"
+                  value={profile?.account_status || "Active"}
+                  badge
+                />
+                <Info label="User type" value={profile?.role || "Citizen"} />
+              </div>
+            )}
           </Panel>
           <Panel title="Preferences">
             <div className="preference-list">
@@ -885,7 +1009,11 @@ export function ProfilePage({ navigate, complaints, showToast }) {
                   <strong>Preferred language</strong>
                   <small>Language used in system messages</small>
                 </span>
-                <select defaultValue="English">
+                <select
+                  value={form.preferredLanguage}
+                  onChange={setField("preferredLanguage")}
+                  disabled={!editing}
+                >
                   <option>English</option>
                   <option>বাংলা</option>
                 </select>
@@ -895,15 +1023,36 @@ export function ProfilePage({ navigate, complaints, showToast }) {
                   <strong>Complaint notifications</strong>
                   <small>Receive status updates and service messages</small>
                 </span>
-                <input type="checkbox" defaultChecked />
+                <input
+                  type="checkbox"
+                  checked={form.notificationEnabled}
+                  onChange={setField("notificationEnabled")}
+                  disabled={!editing}
+                />
                 <i />
               </label>
             </div>
+            {editing && (
+              <div className="profile-edit-actions">
+                {error && (
+                  <p className="form-message form-message--error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Saving changes…" : "Save changes"}
+                </Button>
+              </div>
+            )}
           </Panel>
           <Panel
             title="Complaint history"
             action={
-              <Button variant="text" onClick={() => navigate("my-complaints")}>
+              <Button
+                type="button"
+                variant="text"
+                onClick={() => navigate("my-complaints")}
+              >
                 View all
               </Button>
             }
@@ -911,6 +1060,7 @@ export function ProfilePage({ navigate, complaints, showToast }) {
             <div className="compact-list">
               {complaints.slice(0, 3).map((item) => (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => navigate("complaint-details")}
                 >
@@ -926,7 +1076,7 @@ export function ProfilePage({ navigate, complaints, showToast }) {
               ))}
             </div>
           </Panel>
-        </div>
+        </form>
       </div>
     </Shell>
   );

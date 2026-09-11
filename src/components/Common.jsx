@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { adminSidebar, citizenSidebar } from "../data";
+import { useAuth } from "../context/AuthContext";
 
 const iconMap = {
   "citizen-dashboard": LayoutDashboard,
@@ -215,7 +216,7 @@ export function Panel({ children, className = "", title, action }) {
   );
 }
 
-function SideNav({ type, active, navigate, open, close }) {
+function SideNav({ type, active, navigate, open, close, onSignOut }) {
   const items = type === "admin" ? adminSidebar : citizenSidebar;
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
@@ -259,7 +260,7 @@ function SideNav({ type, active, navigate, open, close }) {
           <HelpCircle size={18} />
           Help centre
         </button>
-        <button onClick={() => navigate("home")}>
+        <button onClick={onSignOut}>
           <LogOut size={18} />
           Sign out
         </button>
@@ -285,7 +286,27 @@ export function AppShell({
   children,
   onPreview,
 }) {
+  const { user, profile, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
+  const citizenName = profile?.full_name || user?.email || "Citizen";
+  const citizenInitials = citizenName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+  const handleSignOut = async () => {
+    if (type === "citizen" && user) {
+      try {
+        await signOut();
+      } catch (error) {
+        console.error("Unable to sign out", error);
+      }
+    }
+    navigate("home");
+  };
+
   return (
     <div className="app-shell">
       <SideNav
@@ -294,6 +315,7 @@ export function AppShell({
         navigate={navigate}
         open={open}
         close={() => setOpen(false)}
+        onSignOut={handleSignOut}
       />
       {open && (
         <button
@@ -333,10 +355,12 @@ export function AppShell({
                 navigate(type === "admin" ? "admin-profile" : "profile")
               }
             >
-              <span className="avatar">{type === "admin" ? "DA" : "DC"}</span>
+              <span className="avatar">
+                {type === "admin" ? "DA" : citizenInitials || "C"}
+              </span>
               <span>
                 <strong>
-                  {type === "admin" ? "Demo Administrator" : "Demo Citizen"}
+                  {type === "admin" ? "Demo Administrator" : citizenName}
                 </strong>
                 <small>
                   {type === "admin"

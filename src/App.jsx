@@ -1,6 +1,7 @@
 // Main application controller: routes screens, stores demo state and controls themes.
 import React from "react";
 import { ThemeToggle, Toast } from "./components/Common";
+import { useAuth } from "./context/AuthContext";
 import { complaintsSeed, notificationsSeed, usersSeed } from "./data";
 import {
   HomePage,
@@ -57,12 +58,25 @@ const knownScreens = new Set([
   "point-degradation",
 ]);
 
+// Citizen pages require an authenticated Supabase session.
+const protectedCitizenScreens = new Set([
+  "citizen-dashboard",
+  "submit-complaint",
+  "location",
+  "submission-confirmation",
+  "my-complaints",
+  "complaint-details",
+  "profile",
+  "notifications",
+]);
+
 function screenFromHash() {
   const screen = window.location.hash.replace(/^#\/?/, "") || "home";
   return knownScreens.has(screen) ? screen : "preview";
 }
 
 export default function App() {
+  const { user, loading: authLoading } = useAuth();
   // Shared interface state used by the public, citizen and administrator pages.
   const [screen, setScreen] = React.useState(screenFromHash);
   const [theme, setTheme] = React.useState(
@@ -95,9 +109,26 @@ export default function App() {
     }
   }, [theme]);
 
-  const navigate = React.useCallback((nextScreen) => {
-    window.location.hash = `/${nextScreen}`;
-  }, []);
+  const navigate = React.useCallback(
+    (nextScreen, options = {}) => {
+      if (
+        protectedCitizenScreens.has(nextScreen) &&
+        !user &&
+        !authLoading &&
+        !options.authenticated
+      ) {
+        try {
+          sessionStorage.setItem("cleancity-return-to", nextScreen);
+        } catch {
+          // Authentication still works if browser storage is unavailable.
+        }
+        window.location.hash = "/login";
+        return;
+      }
+      window.location.hash = `/${nextScreen}`;
+    },
+    [authLoading, user],
+  );
 
   const showToast = React.useCallback((message) => setToast(message), []);
   const toggleTheme = React.useCallback(() => {
@@ -128,6 +159,8 @@ export default function App() {
   const shared = { navigate, showToast };
   const activeComplaint = complaints[0];
   const activeUser = usersSeed[0];
+  const displayScreen =
+    protectedCitizenScreens.has(screen) && !user ? "login" : screen;
 
   // Screen registry: each route name maps to its matching React page component.
   const screens = {
@@ -188,7 +221,14 @@ export default function App() {
 
   return (
     <>
-      {screens[screen] || screens.preview}
+      {authLoading ? (
+        <main className="auth-loading" role="status" aria-live="polite">
+          <span className="auth-spinner" />
+          <strong>Restoring your secure session…</strong>
+        </main>
+      ) : (
+        screens[displayScreen] || screens.preview
+      )}
       <footer className="site-footer">All rights reserved © Team Void</footer>
       <ThemeToggle theme={theme} onToggle={toggleTheme} />
       {toast && <Toast message={toast} onClose={() => setToast("")} />}
