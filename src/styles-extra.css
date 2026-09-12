@@ -2162,6 +2162,58 @@ html[data-theme="light"] .success-card .dashboard-return:hover {
   color: #126b3f;
 }
 
+/* PAGE — Citizen Profile: improve marked account, contact and history text. */
+.profile-layout .info-item {
+  min-height: 88px;
+  padding: 16px;
+}
+
+.profile-layout .info-item small {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.profile-layout .info-item strong {
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.profile-layout .profile-contact {
+  gap: 13px;
+}
+
+.profile-layout .profile-contact span {
+  gap: 11px;
+  color: #c1d5ca;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.profile-layout .compact-list button {
+  padding: 15px 8px;
+}
+
+.profile-layout .compact-list strong {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.profile-layout .compact-list small {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+html[data-theme="light"] .profile-layout .profile-contact span {
+  color: #385c48;
+}
+
+html[data-theme="light"] .profile-layout .info-item small,
+html[data-theme="light"] .profile-layout .compact-list small {
+  color: #506d5d;
+}
+
 /* Keep confirmation actions readable regardless of inherited card text rules. */
 html[data-theme="light"]
   .success-card
