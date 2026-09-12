@@ -7,6 +7,15 @@ const AuthContext = React.createContext(null);
 const missingConfigurationMessage =
   "Supabase is not configured. Add the project URL and publishable key to .env.local.";
 
+const createNidFingerprint = async (nid) => {
+  const normalizedNid = nid.replace(/\D/g, "");
+  const bytes = new TextEncoder().encode(`cleancity-nid:${normalizedNid}`);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
 export function AuthProvider({ children }) {
   const [session, setSession] = React.useState(null);
   const [profile, setProfile] = React.useState(null);
@@ -69,8 +78,27 @@ export function AuthProvider({ children }) {
     });
   }, [loadProfile, session?.user?.id]);
 
+  const checkNidAvailability = React.useCallback(async (nid) => {
+    if (!supabase) throw new Error(missingConfigurationMessage);
+    const normalizedNid = nid.replace(/\D/g, "");
+    if (![10, 13].includes(normalizedNid.length)) {
+      throw new Error("NID must contain exactly 10 or 13 digits.");
+    }
+    const fingerprint = await createNidFingerprint(normalizedNid);
+    const { data, error } = await supabase.rpc("nid_is_available", {
+      candidate_fingerprint: fingerprint,
+    });
+    if (error) throw error;
+    return { available: Boolean(data), fingerprint, normalizedNid };
+  }, []);
+
   const signUp = React.useCallback(async (values) => {
     if (!supabase) throw new Error(missingConfigurationMessage);
+
+    const nidCheck = await checkNidAvailability(values.nid);
+    if (!nidCheck.available) {
+      throw new Error("An account already exists with this NID number.");
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email: values.email.trim().toLowerCase(),
@@ -80,14 +108,15 @@ export function AuthProvider({ children }) {
           full_name: values.fullName.trim(),
           phone: values.phone.trim(),
           residential_address: values.address.trim(),
-          nid_last4: values.nid.replace(/\D/g, "").slice(-4),
+          nid_last4: nidCheck.normalizedNid.slice(-4),
+          nid_fingerprint: nidCheck.fingerprint,
         },
       },
     });
 
     if (error) throw error;
     return data;
-  }, []);
+  }, [checkNidAvailability]);
 
   const signIn = React.useCallback(async (email, password) => {
     if (!supabase) throw new Error(missingConfigurationMessage);
@@ -143,6 +172,7 @@ export function AuthProvider({ children }) {
       loading,
       profileLoading,
       signUp,
+      checkNidAvailability,
       signIn,
       signOut,
       updateProfile,
@@ -154,6 +184,7 @@ export function AuthProvider({ children }) {
       loading,
       profileLoading,
       signUp,
+      checkNidAvailability,
       signIn,
       signOut,
       updateProfile,

@@ -13,8 +13,12 @@ Administrator screens still use the existing demonstration data.
    `supabase/migrations/202609120001_create_citizen_dashboard_data.sql`, and run
    it. The query creates the `complaints` and `notifications` tables, security
    policies, triggers, and refreshes the Supabase API schema cache.
-4. Open **Project Settings > API** and copy the Project URL and Publishable key.
-5. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
+4. Run `supabase/migrations/202609120002_enforce_unique_citizen_nid.sql` to
+   enforce unique 10 or 13-digit NIDs for new registrations. The full NID is
+   never stored; only a protected one-way fingerprint and the last four digits
+   are retained.
+5. Open **Project Settings > API** and copy the Project URL and Publishable key.
+6. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
    Never use the `service_role` key in this frontend.
 
 ```env

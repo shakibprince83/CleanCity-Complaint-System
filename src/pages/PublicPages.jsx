@@ -42,6 +42,9 @@ function readableAuthError(error) {
   if (message.toLowerCase().includes("user already registered")) {
     return "An account already exists with this email address.";
   }
+  if (message.toLowerCase().includes("database error saving new user")) {
+    return "This email address or NID may already be registered.";
+  }
   return message;
 }
 
@@ -174,7 +177,7 @@ export function HomePage({ navigate }) {
 }
 
 export function RegistrationPage({ navigate, showToast }) {
-  const { signUp, isConfigured } = useAuth();
+  const { signUp, checkNidAvailability, isConfigured } = useAuth();
   const [role, setRole] = React.useState("Citizen");
   const [showPassword, setShowPassword] = React.useState(false);
   const [form, setForm] = React.useState({
@@ -187,12 +190,16 @@ export function RegistrationPage({ navigate, showToast }) {
   const [password, setPassword] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
   const [verified, setVerified] = React.useState(false);
+  const [checkingNid, setCheckingNid] = React.useState(false);
   const [accepted, setAccepted] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
 
   const setField = (field) => (event) => {
-    setForm((current) => ({ ...current, [field]: event.target.value }));
+    const value = field === "nid"
+      ? event.target.value.replace(/\D/g, "").slice(0, 13)
+      : event.target.value;
+    setForm((current) => ({ ...current, [field]: value }));
     if (field === "nid") setVerified(false);
   };
 
@@ -209,7 +216,7 @@ export function RegistrationPage({ navigate, showToast }) {
       return;
     }
     if (!verified) {
-      setError("Please verify the NID format before creating the account.");
+      setError("Please verify that the NID is valid and available.");
       return;
     }
     if (!accepted) {
@@ -367,23 +374,45 @@ export function RegistrationPage({ navigate, showToast }) {
                 value={form.nid}
                 onChange={setField("nid")}
                 inputMode="numeric"
+                pattern="(?:[0-9]{10}|[0-9]{13})"
+                minLength={10}
+                maxLength={13}
                 autoComplete="off"
               />
             </div>
             <Button
               type="button"
               variant={verified ? "success" : "outline"}
-              onClick={() => {
+              disabled={checkingNid || !isConfigured}
+              onClick={async () => {
                 const nidLength = form.nid.replace(/\D/g, "").length;
-                if (![10, 13, 17].includes(nidLength)) {
-                  setError("Enter a valid 10, 13 or 17-digit NID number.");
+                if (![10, 13].includes(nidLength)) {
+                  setError("Enter a valid 10 or 13-digit NID number.");
                   return;
                 }
+                setCheckingNid(true);
                 setError("");
-                setVerified(true);
+                try {
+                  const result = await checkNidAvailability(form.nid);
+                  if (!result.available) {
+                    setVerified(false);
+                    setError("An account already exists with this NID number.");
+                    return;
+                  }
+                  setVerified(true);
+                } catch (nidError) {
+                  setVerified(false);
+                  setError(readableAuthError(nidError));
+                } finally {
+                  setCheckingNid(false);
+                }
               }}
             >
-              {verified ? "Format checked" : "Check NID"}
+              {checkingNid
+                ? "Checking…"
+                : verified
+                  ? "NID available"
+                  : "Check NID"}
             </Button>
           </div>
         </Field>
