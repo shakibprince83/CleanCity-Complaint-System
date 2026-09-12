@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
-  ChevronRight,
   CircleCheck,
   Eye,
   EyeOff,
@@ -461,6 +460,7 @@ export function LoginPage({ navigate, showToast }) {
       title="Welcome back"
       description="Log in to report an issue or follow an existing complaint."
       compact
+      hideBackLink
     >
       <form className="auth-form" onSubmit={submit}>
         <Field label="Email address">
@@ -515,27 +515,6 @@ export function LoginPage({ navigate, showToast }) {
           {submitting ? "Logging in…" : "Log in"}{" "}
           {!submitting && <ArrowRight size={17} />}
         </Button>
-        <div className="divider">
-          <span>UI demonstration</span>
-        </div>
-        <div className="demo-access">
-          <button type="button" onClick={() => navigate("citizen-dashboard")}>
-            <User size={18} />
-            <span>
-              <strong>Citizen preview</strong>
-              <small>Open citizen dashboard</small>
-            </span>
-            <ChevronRight size={16} />
-          </button>
-          <button type="button" onClick={() => navigate("admin-dashboard")}>
-            <ShieldCheck size={18} />
-            <span>
-              <strong>Admin preview</strong>
-              <small>Open admin dashboard</small>
-            </span>
-            <ChevronRight size={16} />
-          </button>
-        </div>
         <p className="auth-switch">
           New to CleanCity?{" "}
           <button type="button" onClick={() => navigate("register")}>
@@ -553,6 +532,7 @@ function AuthLayout({
   description,
   children,
   compact = false,
+  hideBackLink = false,
 }) {
   return (
     <div className="auth-page">
@@ -590,9 +570,11 @@ function AuthLayout({
       </div>
       <div className="auth-page__form">
         <div className={`auth-card ${compact ? "auth-card--compact" : ""}`}>
-          <div className="auth-card__top">
-            <BackToPreview navigate={navigate} />
-          </div>
+          {!hideBackLink && (
+            <div className="auth-card__top">
+              <BackToPreview navigate={navigate} />
+            </div>
+          )}
           <h1>{title}</h1>
           <p>{description}</p>
           {children}
