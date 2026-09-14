@@ -273,14 +273,36 @@ export function SubmitComplaint({
   const [category, setCategory] = React.useState("Waste");
   const [equipment, setEquipment] = React.useState(false);
   const [preview, setPreview] = React.useState(null);
+  const [photoFile, setPhotoFile] = React.useState(null);
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
 
+  React.useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
   const upload = (event) => {
     const file = event.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    setError("");
+    if (!file) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      event.target.value = "";
+      setPhotoFile(null);
+      setPreview(null);
+      setError("Please select a JPG or PNG image.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      event.target.value = "";
+      setPhotoFile(null);
+      setPreview(null);
+      setError("The complaint photo must be 8 MB or smaller.");
+      return;
+    }
+    setPhotoFile(file);
+    setPreview(URL.createObjectURL(file));
   };
   const submit = async (event) => {
     event.preventDefault();
@@ -291,6 +313,7 @@ export function SubmitComplaint({
         title, description, category,
         location: locationAddress || profile?.residential_address || "Selected map location",
         latitude: location[0], longitude: location[1],
+        imageFile: photoFile,
       });
       showToast(`Complaint submitted. ID ${complaint.id} has been created.`);
       navigate("submission-confirmation");

@@ -17,8 +17,11 @@ Administrator screens still use the existing demonstration data.
    enforce unique 10 or 13-digit NIDs for new registrations. The full NID is
    never stored; only a protected one-way fingerprint and the last four digits
    are retained.
-5. Open **Project Settings > API** and copy the Project URL and Publishable key.
-6. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
+5. Run `supabase/migrations/202609140001_add_complaint_evidence_storage.sql`
+   to add the complaint image path, create the private `complaint-evidence`
+   Storage bucket, and enable owner-only upload, read, and delete policies.
+6. Open **Project Settings > API** and copy the Project URL and Publishable key.
+7. Copy `.env.example` to `.env.local` and replace the two Supabase placeholders.
    Never use the `service_role` key in this frontend.
 
 ```env
@@ -60,8 +63,10 @@ For real email delivery, configure a custom SMTP provider before production.
 3. Log in and open the Profile page.
 4. Edit the name, phone, address, language, and notification preference.
 5. Confirm the changes appear in **Table Editor > profiles**.
-6. Submit a complaint and confirm a row appears in **Table Editor > complaints**
-   and **Table Editor > notifications**.
+6. Submit a complaint with a JPG or PNG image. Confirm a row appears in
+   **Table Editor > complaints**, its `image_path` is populated, the file appears
+   in **Storage > complaint-evidence**, and a row appears in
+   **Table Editor > notifications**.
 7. Confirm the citizen dashboard uses those rows and shows zero instead of
    sample records for a citizen who has not submitted a complaint.
 8. Sign out and verify that citizen routes redirect to Login.

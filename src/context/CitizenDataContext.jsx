@@ -25,7 +25,7 @@ const toComplaint = (row) => ({
   category: row.category, location: row.location, latitude: row.latitude,
   longitude: row.longitude, date: formatDate(row.created_at),
   createdAt: row.created_at, status: row.status, priority: row.priority,
-  description: row.description,
+  description: row.description, imagePath: row.image_path,
 });
 
 const toNotification = (row) => ({
@@ -68,14 +68,36 @@ export function CitizenDataProvider({ children }) {
 
   const addComplaint = React.useCallback(async (payload) => {
     if (!supabase || !user?.id) throw new Error("You must be logged in to submit a complaint.");
+    let imagePath = null;
+    if (payload.imageFile) {
+      const extension = payload.imageFile.type === "image/png" ? "png" : "jpg";
+      imagePath = `${user.id}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from("complaint-evidence")
+        .upload(imagePath, payload.imageFile, {
+          contentType: payload.imageFile.type,
+          cacheControl: "3600",
+          upsert: false,
+        });
+      if (uploadError) {
+        throw new Error(uploadError.message || "The complaint photo could not be uploaded.");
+      }
+    }
+
     const { data, error: insertError } = await supabase.from("complaints").insert({
       citizen_id: user.id,
       title: payload.title.trim(), description: payload.description.trim(),
       category: payload.category, location: payload.location.trim(),
       latitude: payload.latitude, longitude: payload.longitude,
+      image_path: imagePath,
       priority: payload.category === "Emergency" ? "Urgent" : "Normal",
     }).select("*").single();
-    if (insertError) throw new Error(complaintErrorMessage(insertError));
+    if (insertError) {
+      if (imagePath) {
+        await supabase.storage.from("complaint-evidence").remove([imagePath]);
+      }
+      throw new Error(complaintErrorMessage(insertError));
+    }
     const complaint = toComplaint(data);
     setComplaints((current) => [complaint, ...current]);
     await refresh();
