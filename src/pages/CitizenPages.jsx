@@ -56,6 +56,7 @@ import {
 } from "../components/Common";
 import LeafletMap from "../components/LeafletMap";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 import { statusSteps } from "../data";
 
 const Shell = ({ screen, navigate, children }) => (
@@ -812,6 +813,40 @@ export function MyComplaints({ navigate, complaints }) {
 
 export function ComplaintDetails({ navigate, complaint }) {
   const item = complaint;
+  const [imageUrl, setImageUrl] = React.useState("");
+  const [imageLoading, setImageLoading] = React.useState(Boolean(item?.imagePath));
+
+  React.useEffect(() => {
+    let active = true;
+    setImageUrl("");
+
+    if (!supabase || !item?.imagePath) {
+      setImageLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    setImageLoading(true);
+    supabase.storage
+      .from("complaint-evidence")
+      .createSignedUrl(item.imagePath, 60 * 60)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          console.error("Unable to load complaint evidence", error);
+          setImageUrl("");
+        } else {
+          setImageUrl(data?.signedUrl || "");
+        }
+        setImageLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [item?.imagePath]);
+
   return (
     <Shell screen="my-complaints" navigate={navigate}>
       <PageHeading
@@ -829,14 +864,28 @@ export function ComplaintDetails({ navigate, complaint }) {
       />
       <div className="details-grid">
         <Panel className="span-2 evidence-card">
-          <div className="complaint-photo">
+          <div className={`complaint-photo ${imageUrl ? "complaint-photo--has-image" : ""}`}>
             <div className="photo-overlay">
               <Badge tone="glass">
                 <Camera size={14} /> SUBMITTED EVIDENCE
               </Badge>
-              <span>Photo preview</span>
+              <span>
+                {imageLoading
+                  ? "Loading photo…"
+                  : imageUrl
+                    ? "Uploaded photo"
+                    : "No photo submitted"}
+              </span>
             </div>
-            <Recycle size={78} />
+            {imageUrl ? (
+              <img
+                className="complaint-photo__image"
+                src={imageUrl}
+                alt={`Evidence for ${item.title}`}
+              />
+            ) : (
+              <Recycle size={78} />
+            )}
           </div>
           <div className="evidence-copy">
             <div>

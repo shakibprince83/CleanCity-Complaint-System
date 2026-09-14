@@ -2759,6 +2759,17 @@ select:focus {
     ),
     linear-gradient(145deg, #174b34, #071b12);
 }
+.complaint-photo__image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.complaint-photo--has-image::after {
+  display: none;
+}
 .complaint-photo::after {
   content: "";
   position: absolute;
