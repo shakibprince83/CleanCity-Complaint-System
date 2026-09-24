@@ -307,19 +307,16 @@ export function SubmitComplaint({
     if (!["image/jpeg", "image/png"].includes(file.type)) {
       event.target.value = "";
       updateDraft("photoFile", null);
-      setPreview(null);
       setError("Please select a JPG or PNG image.");
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
       event.target.value = "";
       updateDraft("photoFile", null);
-      setPreview(null);
       setError("The complaint photo must be 8 MB or smaller.");
       return;
     }
     updateDraft("photoFile", file);
-    setPreview(URL.createObjectURL(file));
   };
   const submit = async (event) => {
     event.preventDefault();
@@ -1257,7 +1254,12 @@ function Info({ label, value, badge }) {
   );
 }
 
-export function NotificationsPage({ navigate, notifications, markAllRead }) {
+export function NotificationsPage({
+  navigate,
+  notifications,
+  markAllRead,
+  openNotification,
+}) {
   const unread = notifications.filter((item) => item.unread).length;
   return (
     <Shell screen="notifications" navigate={navigate}>
@@ -1277,9 +1279,12 @@ export function NotificationsPage({ navigate, notifications, markAllRead }) {
           title={`${unread} unread notifications`}
         >
           {notifications.map((item) => (
-            <article
+            <button
+              type="button"
               key={item.id}
-              className={`notification-item ${item.unread ? "notification-item--unread" : ""}`}
+              className={`notification-item ${item.unread ? "notification-item--unread" : "notification-item--read"}`}
+              onClick={() => openNotification(item)}
+              aria-label={`Open notification: ${item.title}`}
             >
               <span
                 className={`notification-item__icon notification-item__icon--${item.tone}`}
@@ -1303,10 +1308,10 @@ export function NotificationsPage({ navigate, notifications, markAllRead }) {
                   {item.time}
                 </small>
               </div>
-              <button onClick={() => navigate("complaint-details")}>
+              <span className="notification-item__chevron" aria-hidden="true">
                 <ChevronRight size={18} />
-              </button>
-            </article>
+              </span>
+            </button>
           ))}
         </Panel>
         <Panel className="notification-summary">

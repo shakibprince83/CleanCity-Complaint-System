@@ -29,8 +29,13 @@ const toComplaint = (row) => ({
 });
 
 const toNotification = (row) => ({
-  id: row.id, title: row.title, message: row.message,
-  time: formatDate(row.created_at), unread: !row.read_at, tone: row.tone,
+  id: row.id,
+  complaintId: row.complaint_id,
+  title: row.title,
+  message: row.message,
+  time: formatDate(row.created_at),
+  unread: !row.read_at,
+  tone: row.tone,
 });
 
 export function CitizenDataProvider({ children }) {
@@ -104,6 +109,18 @@ export function CitizenDataProvider({ children }) {
     return complaint;
   }, [refresh, user?.id]);
 
+  const markNotificationRead = React.useCallback(async (notificationId) => {
+    if (!supabase || !user?.id || !notificationId) return;
+    const { error: updateError } = await supabase.from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("citizen_id", user.id);
+    if (updateError) throw updateError;
+    setNotifications((current) => current.map((item) => (
+      item.id === notificationId ? { ...item, unread: false } : item
+    )));
+  }, [user?.id]);
+
   const markAllRead = React.useCallback(async () => {
     if (!supabase || !user?.id) return;
     const { error: updateError } = await supabase.from("notifications")
@@ -114,8 +131,24 @@ export function CitizenDataProvider({ children }) {
   }, [user?.id]);
 
   const value = React.useMemo(() => ({
-    complaints, notifications, loading, error, refresh, addComplaint, markAllRead,
-  }), [complaints, notifications, loading, error, refresh, addComplaint, markAllRead]);
+    complaints,
+    notifications,
+    loading,
+    error,
+    refresh,
+    addComplaint,
+    markNotificationRead,
+    markAllRead,
+  }), [
+    complaints,
+    notifications,
+    loading,
+    error,
+    refresh,
+    addComplaint,
+    markNotificationRead,
+    markAllRead,
+  ]);
 
   return <CitizenDataContext.Provider value={value}>{children}</CitizenDataContext.Provider>;
 }

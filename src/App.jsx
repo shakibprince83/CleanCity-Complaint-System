@@ -83,6 +83,7 @@ export default function App() {
     notifications,
     loading: citizenDataLoading,
     addComplaint,
+    markNotificationRead,
     markAllRead,
   } = useCitizenData();
   // Shared interface state used by the public, citizen and administrator pages.
@@ -93,6 +94,7 @@ export default function App() {
   const [adminComplaints] = React.useState(complaintsSeed);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
   const [locationAddress, setLocationAddress] = React.useState("");
+  const [selectedComplaintId, setSelectedComplaintId] = React.useState(null);
   const [complaintDraft, setComplaintDraft] = React.useState({
     category: "Waste",
     equipment: false,
@@ -151,7 +153,9 @@ export default function App() {
   }, []);
 
   const shared = { navigate, showToast };
-  const activeComplaint = citizenComplaints[0];
+  const activeComplaint =
+    citizenComplaints.find((item) => item.databaseId === selectedComplaintId) ||
+    citizenComplaints[0];
   const activeAdminComplaint = adminComplaints[0];
   const activeUser = usersSeed[0];
   const displayScreen =
@@ -201,6 +205,23 @@ export default function App() {
       <NotificationsPage
         {...shared}
         notifications={notifications}
+        openNotification={async (notification) => {
+          try {
+            if (notification.unread) {
+              await markNotificationRead(notification.id);
+            }
+            if (notification.complaintId) {
+              setSelectedComplaintId(notification.complaintId);
+              navigate("complaint-details");
+            } else {
+              showToast("Notification marked as read");
+            }
+          } catch (notificationError) {
+            showToast(
+              notificationError.message || "The notification could not be opened.",
+            );
+          }
+        }}
         markAllRead={async () => {
           await markAllRead();
           showToast("All notifications marked as read");

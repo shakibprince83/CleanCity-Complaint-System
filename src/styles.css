@@ -3130,8 +3130,34 @@ select:focus {
   grid-template-columns: auto 1fr auto;
   align-items: flex-start;
   gap: 12px;
+  width: 100%;
   padding: 14px 8px;
+  border: 0;
   border-bottom: 1px solid var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+.notification-item--unread {
+  background: rgba(92, 222, 152, 0.07);
+}
+.notification-item--read {
+  background: rgba(255, 255, 255, 0.025);
+  opacity: 0.72;
+}
+.notification-item:hover,
+.notification-item:focus-visible {
+  background: rgba(92, 222, 152, 0.12);
+  opacity: 1;
+}
+.notification-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
 }
 .notification-item:last-child {
   border-bottom: 0;
@@ -3186,12 +3212,11 @@ select:focus {
   color: #617b6e;
   font-size: 8px;
 }
-.notification-item > button {
+.notification-item__chevron {
+  display: grid;
+  place-items: center;
   padding: 8px;
-  border: 0;
-  background: transparent;
   color: #587266;
-  cursor: pointer;
 }
 .notification-summary {
   display: flex;
