@@ -112,6 +112,9 @@ export default function App() {
     refresh: refreshAdminData,
     updateComplaint,
     updateUser,
+    saveAuthorityReport,
+    reviewComplaint,
+    applyPointPenalty,
   } = useAdminData();
   // Shared interface state used by the public, citizen and administrator pages.
   const hasAdminAccess =
@@ -345,25 +348,29 @@ export default function App() {
       />
     ),
     "verification-review": activeUser ? (
-      <VerificationReview {...shared} user={activeUser} />
+      <VerificationReview {...shared} user={activeUser} updateUser={updateUser} />
     ) : (
       <UserManagement {...shared} users={adminUsers} />
     ),
     "report-authority": (
       activeAdminComplaint ? (
-        <ReportAuthority {...shared} complaint={activeAdminComplaint} />
+        <ReportAuthority {...shared} complaint={activeAdminComplaint} saveAuthorityReport={saveAuthorityReport} />
       ) : (
         <ManageComplaints {...shared} complaints={adminComplaints} />
       )
     ),
     "validity-review": (
       activeAdminComplaint ? (
-        <ValidityReview {...shared} complaint={activeAdminComplaint} />
+        <ValidityReview {...shared} complaint={activeAdminComplaint} reviewComplaint={reviewComplaint} />
       ) : (
         <ManageComplaints {...shared} complaints={adminComplaints} />
       )
     ),
-    "point-degradation": <PointDegradation {...shared} />,
+    "point-degradation": activeAdminComplaint ? (
+      <PointDegradation {...shared} complaint={activeAdminComplaint} applyPointPenalty={applyPointPenalty} />
+    ) : (
+      <ManageComplaints {...shared} complaints={adminComplaints} />
+    ),
   };
 
   return (

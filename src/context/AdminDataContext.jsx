@@ -32,6 +32,9 @@ const mapComplaint = (row, profiles) => {
     reporterName: reporter?.full_name || "Citizen",
     reporterEmail: reporter?.email || "",
     reporterVerified: Boolean(reporter?.nid_verified),
+    reporterTrustScore: Number(reporter?.trust_score ?? 0),
+    reporterJoined: formatDate(reporter?.created_at),
+    imagePath: row.image_path || "",
   };
 };
 
@@ -118,6 +121,48 @@ export function useAdminData() {
     await refresh();
   }, [isAdmin, refresh]);
 
+  const saveAuthorityReport = React.useCallback(async (complaintId, report, reportId) => {
+    if (!supabase || !isAdmin) throw new Error("Administrator access required.");
+    const payload = {
+      complaint_id: complaintId,
+      authority: report.authority,
+      subject: report.subject.trim(),
+      details: report.details.trim(),
+      response_deadline: report.responseDeadline || null,
+      priority: report.priority,
+      status: report.status,
+      sent_at: report.status === "Sent" ? new Date().toISOString() : null,
+    };
+    let query = supabase.from("authority_reports");
+    query = reportId ? query.update(payload).eq("id", reportId) : query.insert(payload);
+    const { data, error: saveError } = await query.select().single();
+    if (saveError) throw saveError;
+    return data;
+  }, [isAdmin]);
+
+  const reviewComplaint = React.useCallback(async (complaintId, decision, notes) => {
+    if (!supabase || !isAdmin) throw new Error("Administrator access required.");
+    const { error: reviewError } = await supabase.rpc("admin_review_complaint", {
+      target_complaint_id: complaintId,
+      review_decision: decision,
+      review_notes: notes || null,
+    });
+    if (reviewError) throw reviewError;
+    await refresh();
+  }, [isAdmin, refresh]);
+
+  const applyPointPenalty = React.useCallback(async (complaintId, deduction, reason) => {
+    if (!supabase || !isAdmin) throw new Error("Administrator access required.");
+    const { data, error: penaltyError } = await supabase.rpc("admin_apply_trust_penalty", {
+      target_complaint_id: complaintId,
+      deduction,
+      penalty_reason: reason,
+    });
+    if (penaltyError) throw penaltyError;
+    await refresh();
+    return data;
+  }, [isAdmin, refresh]);
+
   return {
     isAdmin,
     complaints,
@@ -127,5 +172,8 @@ export function useAdminData() {
     refresh,
     updateComplaint,
     updateUser,
+    saveAuthorityReport,
+    reviewComplaint,
+    applyPointPenalty,
   };
 }

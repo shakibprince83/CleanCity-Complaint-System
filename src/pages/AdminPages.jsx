@@ -787,429 +787,152 @@ export function AdminProfile({ navigate, showToast }) {
   );
 }
 
-export function VerificationReview({ navigate, user, showToast }) {
-  return (
-    <Shell screen="user-management" navigate={navigate}>
-      <PageHeading
-        eyebrow={`IDENTITY REVIEW · ${user.id}`}
-        title="Review identity verification"
-        description="Review the citizen's submitted identity information and verification record."
-        actions={
-          <Button variant="outline" onClick={() => navigate("edit-user")}>
-            Back to user
-          </Button>
-        }
-      />
-      <div className="verification-review-layout">
-        <Panel title="Submitted identity">
-          <div className="verification-document">
-            <ShieldCheck size={46} />
-            <span>
-              <strong>National ID document</strong>
-              <small>Protected demonstration preview</small>
-            </span>
-          </div>
-          <div className="info-grid">
-            <Info label="Citizen name" value={user.name} />
-            <Info label="NID number" value="DEMO •••• 0001" />
-            <Info label="Submitted" value="19 Aug 2026" />
-            <Info label="Current result" value="Verified" />
-          </div>
-        </Panel>
-        <Panel title="Verification checks">
-          <div className="checklist">
-            <article>
-              <Tick />
-              <span>
-                <strong>Name matched</strong>
-                <small>Profile and document names are consistent.</small>
-              </span>
-              <Badge tone="green">PASSED</Badge>
-            </article>
-            <article>
-              <Tick />
-              <span>
-                <strong>Document checked</strong>
-                <small>The submitted document passed the demo review.</small>
-              </span>
-              <Badge tone="green">PASSED</Badge>
-            </article>
-            <article>
-              <Tick />
-              <span>
-                <strong>Account ownership</strong>
-                <small>Contact details belong to the registered citizen.</small>
-              </span>
-              <Badge tone="green">PASSED</Badge>
-            </article>
-          </div>
-          <div className="verification-review-actions">
-            <Button
-              variant="outline"
-              onClick={() => showToast("Verification sent back for review")}
-            >
-              Request recheck
-            </Button>
-            <Button
-              icon={CheckCircle2}
-              onClick={() => {
-                showToast("Identity verification confirmed");
-                navigate("edit-user");
-              }}
-            >
-              Confirm verification
-            </Button>
-          </div>
-        </Panel>
-      </div>
-    </Shell>
-  );
-}
-
-export function ReportAuthority({ navigate, complaint, showToast }) {
-  return (
-    <Shell screen="report-authority" navigate={navigate}>
-      <PageHeading
-        eyebrow="EXTERNAL REPORT"
-        title="Report to relevant authority"
-        description="Prepare an official report for a complaint requiring external action."
-        actions={<Badge tone="gold">DRAFT</Badge>}
-      />
-      <div className="report-layout">
-        <Panel title="Report details" className="report-form">
-          <div className="form-grid form-grid--two">
-            <Field label="Complaint reference">
-              <input defaultValue={complaint.id} />
-            </Field>
-            <Field label="Relevant authority">
-              <select defaultValue="Dhaka North City Corporation">
-                <option>Dhaka North City Corporation</option>
-                <option>Dhaka Metropolitan Police</option>
-                <option>Fire Service and Civil Defence</option>
-              </select>
-            </Field>
-          </div>
-          <Field label="Report subject">
-            <input
-              defaultValue={`Urgent response requested for ${complaint.id}`}
-            />
-          </Field>
-          <Field label="Report details">
-            <textarea
-              rows="9"
-              defaultValue={`CleanCity requests an on-site review of the reported issue at ${complaint.location}. The citizen evidence and location details have passed the initial administrative review.`}
-            />
-          </Field>
-          <div className="form-grid form-grid--two">
-            <Field label="Response deadline">
-              <input type="date" defaultValue="2026-09-13" />
-            </Field>
-            <Field label="Priority level">
-              <select defaultValue="High">
-                <option>Normal</option>
-                <option>High</option>
-                <option>Urgent</option>
-              </select>
-            </Field>
-          </div>
-          <div className="attachment-row">
-            <span>
-              <FileCheck2 size={20} />
-              <span>
-                <strong>Complaint evidence package</strong>
-                <small>Photo, location and review summary · 2.4 MB</small>
-              </span>
-            </span>
-            <Badge tone="green">ATTACHED</Badge>
-          </div>
-          <div className="report-actions">
-            <Button
-              variant="outline"
-              icon={Save}
-              onClick={() => showToast("Report draft saved")}
-            >
-              Save draft
-            </Button>
-            <Button
-              icon={Send}
-              onClick={() => showToast("Authority report sent successfully")}
-            >
-              Send report
-            </Button>
-          </div>
-        </Panel>
-        <div className="report-side">
-          <Panel title="Complaint summary">
-            <div className="report-summary">
-              <Badge tone="green">{complaint.category}</Badge>
-              <h3>{complaint.title}</h3>
-              <p>{complaint.id}</p>
-              <span>
-                <MapPin size={16} />
-                {complaint.location}
-              </span>
-              <span>
-                <User size={16} />
-                Demo Citizen · Verified
-              </span>
-              <StatusBadge status={complaint.status} />
-            </div>
-          </Panel>
-          <Panel title="Report history">
-            <div className="report-history">
-              <span>
-                <i>
-                  <FileText size={15} />
-                </i>
-                <div>
-                  <strong>Draft opened</strong>
-                  <small>Today, 09:18 AM · Demo Administrator</small>
-                </div>
-              </span>
-              <span>
-                <i>
-                  <Check size={15} />
-                </i>
-                <div>
-                  <strong>Evidence attached</strong>
-                  <small>Today, 09:20 AM · Automatic</small>
-                </div>
-              </span>
-            </div>
-          </Panel>
-        </div>
-      </div>
-    </Shell>
-  );
-}
-
-export function ValidityReview({ navigate, complaint }) {
+export function VerificationReview({ navigate, user, showToast, updateUser }) {
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const saveVerification = async (verified) => {
+    setSaving(true); setError("");
+    try {
+      await updateUser(user.id, { role: user.role, accountStatus: user.accountStatus, verified });
+      showToast(verified ? "Identity verification confirmed" : "Verification sent back for review");
+      navigate(verified ? "edit-user" : "user-management");
+    } catch (saveError) { setError(saveError.message || "Verification could not be updated."); }
+    finally { setSaving(false); }
+  };
   const checks = [
-    ["Photo evidence is clear", "Visible location and issue details", true],
-    [
-      "Location information is consistent",
-      "GPS and entered address match",
-      true,
-    ],
-    [
-      "Complaint description is specific",
-      "Contains issue, impact and landmark",
-      true,
-    ],
-    ["Duplicate report check", "No matching complaint within 100 metres", true],
+    ["Name available", "A citizen name is stored on the profile.", Boolean(user.name)],
+    ["NID recorded", "The protected NID value is present.", Boolean(user.nidLast4)],
+    ["Contact available", "An email address or phone number is stored.", Boolean(user.email || user.phone)],
   ];
   return (
-    <Shell screen="admin-dashboard" navigate={navigate}>
-      <div className="validity-review-page">
-        <PageHeading
-          eyebrow="VALIDITY REVIEW · 01 OF 07"
-          title="Review complaint validity"
-          description="Check the evidence and reporter record before confirming the complaint."
-          actions={<Badge tone="gold">REVIEW QUEUE</Badge>}
-        />
-        <div className="review-layout">
-          <div className="review-main">
-            <Panel className="review-hero">
-              <div>
-                <Badge tone="green">{complaint.category}</Badge>
-                <h2>{complaint.title}</h2>
-                <p>{complaint.id} · Submitted 08 Sep 2026, 09:42 AM</p>
-              </div>
-              <div className="confidence">
-                <span>
-                  <strong>92%</strong>
-                  <small>validity confidence</small>
-                </span>
-                <div>
-                  <i style={{ width: "92%" }} />
-                </div>
-                <small>Strong evidence consistency</small>
-              </div>
-            </Panel>
-            <Panel title="Evidence and consistency checks">
-              <div className="checklist">
-                {checks.map(([title, text, checked]) => (
-                  <article key={title}>
-                    <Tick checked={checked} />
-                    <div>
-                      <strong>{title}</strong>
-                      <small>{text}</small>
-                    </div>
-                    <Badge tone="green">PASSED</Badge>
-                  </article>
-                ))}
-              </div>
-            </Panel>
-            <Panel title="Complaint snapshot">
-              <div className="snapshot-grid">
-                <div className="snapshot-photo">
-                  <FileText size={44} />
-                  <span>Evidence preview</span>
-                </div>
-                <div>
-                  <p>{complaint.description}</p>
-                  <span>
-                    <MapPin size={16} />
-                    {complaint.location}
-                  </span>
-                  <span>
-                    <BadgeCheck size={16} />
-                    Reporter identity verified
-                  </span>
-                </div>
-              </div>
-            </Panel>
-          </div>
-          <div className="review-side">
-            <Panel title="Reporter trust">
-              <div className="trust-profile">
-                <TrustRing value={86} />
-                <h3>Demo Citizen</h3>
-                <p>Verified citizen · 12 reports</p>
-                <Badge tone="green">EXCELLENT STANDING</Badge>
-              </div>
-              <div className="trust-facts">
-                <span>
-                  <small>Valid reports</small>
-                  <strong>11</strong>
-                </span>
-                <span>
-                  <small>Point penalties</small>
-                  <strong>0</strong>
-                </span>
-                <span>
-                  <small>Member since</small>
-                  <strong>Aug 2026</strong>
-                </span>
-              </div>
-            </Panel>
-            <Panel className="fairness-card">
-              <span>
-                <ShieldCheck size={21} />
-              </span>
-              <div>
-                <strong>Fairness check</strong>
-                <p>
-                  Base the decision only on complaint evidence and consistency.
-                  Trust score is supporting information.
-                </p>
-              </div>
-            </Panel>
-            <Panel title="Review decision">
-              <Button
-                className="button--full"
-                icon={CheckCircle2}
-                onClick={() => navigate("edit-complaint")}
-              >
-                Confirm as valid
-              </Button>
-              <Button
-                variant="danger-soft"
-                className="button--full"
-                icon={ShieldAlert}
-                onClick={() => navigate("point-degradation")}
-              >
-                Apply point penalty
-              </Button>
-            </Panel>
-          </div>
-        </div>
+    <Shell screen="user-management" navigate={navigate}>
+      <PageHeading eyebrow={`IDENTITY REVIEW · ${user.id.slice(0, 8).toUpperCase()}`} title="Review identity verification"
+        description="Review the citizen's stored identity information and update the verification result."
+        actions={<Button variant="outline" onClick={() => navigate("edit-user")}>Back to user</Button>} />
+      {error && <div className="page-error" role="alert">{error}</div>}
+      <div className="verification-review-layout">
+        <Panel title="Submitted identity"><div className="verification-document"><ShieldCheck size={46} />
+          <span><strong>National ID record</strong><small>Only the protected final four digits are available.</small></span></div>
+          <div className="info-grid"><Info label="Citizen name" value={user.name} />
+            <Info label="NID number" value={user.nidLast4 ? `•••• •••• ${user.nidLast4}` : "Not provided"} />
+            <Info label="Member since" value={user.joined} /><Info label="Current result" value={user.verified ? "Verified" : "Pending review"} /></div></Panel>
+        <Panel title="Verification checks"><div className="checklist">
+          {checks.map(([title, text, passed]) => <article key={title}><Tick checked={passed} />
+            <span><strong>{title}</strong><small>{text}</small></span><Badge tone={passed ? "green" : "gold"}>{passed ? "PASSED" : "REVIEW"}</Badge></article>)}
+        </div><div className="verification-review-actions">
+          <Button variant="outline" disabled={saving} onClick={() => saveVerification(false)}>Request recheck</Button>
+          <Button icon={CheckCircle2} disabled={saving || !user.nidLast4} onClick={() => saveVerification(true)}>{saving ? "Saving…" : "Confirm verification"}</Button>
+        </div></Panel>
       </div>
     </Shell>
   );
 }
 
-export function PointDegradation({ navigate, showToast }) {
-  const [confirmed, setConfirmed] = React.useState(false);
+export function ReportAuthority({ navigate, complaint, showToast, saveAuthorityReport }) {
+  const deadline = new Date(); deadline.setDate(deadline.getDate() + 7);
+  const [form, setForm] = React.useState({ authority: "Dhaka North City Corporation", subject: `Response requested for ${complaint.id}`,
+    details: `CleanCity requests an on-site review of the reported issue at ${complaint.location}. The attached citizen evidence and location data have been reviewed.`,
+    responseDeadline: deadline.toISOString().slice(0, 10), priority: complaint.priority || "High" });
+  const [reportRecord, setReportRecord] = React.useState(null);
+  const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
+  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const persist = async (status) => {
+    setSaving(true); setError("");
+    try { const saved = await saveAuthorityReport(complaint.databaseId, { ...form, status }, reportRecord?.id);
+      setReportRecord(saved); showToast(status === "Sent" ? "Authority report sent successfully" : "Report draft saved");
+    } catch (saveError) { setError(saveError.message || "Authority report could not be saved."); }
+    finally { setSaving(false); }
+  };
   return (
-    <Shell screen="admin-dashboard" navigate={navigate}>
-      <div className="confirmation-stage">
-        <div className="confirmation-glow" />
-        <Panel className="penalty-card">
-          <span className="penalty-card__icon">
-            <ShieldAlert size={30} />
-          </span>
-          <Badge tone="red">ADMIN CONFIRMATION</Badge>
-          <h1>Confirm point degradation</h1>
-          <p>
-            Apply a trust-point deduction only after the complaint has been
-            reviewed and confirmed as invalid.
-          </p>
-          <div className="penalty-reference">
-            <span>
-              <FileText size={19} />
-              <span>
-                <small>COMPLAINT</small>
-                <strong>CC-24091 · Overflowing waste beside market</strong>
-              </span>
-            </span>
-            <Badge tone="gold">INVALID REPORT</Badge>
-          </div>
-          <div className="point-calculation">
-            <div>
-              <small>Current trust points</small>
-              <strong>86</strong>
-            </div>
-            <span>
-              <strong>−10</strong>
-              <small>Point deduction</small>
-            </span>
-            <div>
-              <small>New trust points</small>
-              <strong>76</strong>
-            </div>
-          </div>
-          <div className="rule-card">
-            <Flag size={19} />
-            <span>
-              <strong>Rule PD-02 · Invalid information</strong>
-              <small>
-                Evidence did not match the tagged location after administrative
-                review.
-              </small>
-            </span>
-          </div>
-          <label className="appeal-check">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={() => setConfirmed(!confirmed)}
-            />
-            <span>
-              <strong>Appeal protection acknowledged</strong>
-              <small>
-                The citizen can request a review of this decision from the
-                complaint-details page.
-              </small>
-            </span>
-          </label>
-          <div className="penalty-actions">
-            <Button
-              variant="ghost"
-              icon={Undo2}
-              onClick={() => navigate("validity-review")}
-            >
-              Return to review
-            </Button>
-            <Button
-              variant="danger"
-              icon={ShieldAlert}
-              disabled={!confirmed}
-              onClick={() => {
-                showToast("Point deduction confirmed in demo mode");
-                navigate("validity-review");
-              }}
-            >
-              Confirm point penalty
-            </Button>
-          </div>
-          <small className="penalty-footnote">
-            <Shield size={14} /> This action will be saved with the
-            administrator, reason and timestamp.
-          </small>
-        </Panel>
-      </div>
+    <Shell screen="report-authority" navigate={navigate}>
+      <PageHeading eyebrow="EXTERNAL REPORT" title="Report to relevant authority" description="Prepare and store an official report for a complaint requiring external action."
+        actions={<Badge tone={reportRecord?.status === "Sent" ? "green" : "gold"}>{reportRecord?.status || "DRAFT"}</Badge>} />
+      {error && <div className="page-error" role="alert">{error}</div>}
+      <div className="report-layout"><Panel title="Report details" className="report-form">
+        <div className="form-grid form-grid--two"><Field label="Complaint reference"><input value={complaint.id} readOnly /></Field>
+          <Field label="Relevant authority"><select name="authority" value={form.authority} onChange={update}><option>Dhaka North City Corporation</option>
+            <option>Dhaka Metropolitan Police</option><option>Fire Service and Civil Defence</option></select></Field></div>
+        <Field label="Report subject"><input name="subject" value={form.subject} onChange={update} /></Field>
+        <Field label="Report details"><textarea name="details" rows="9" value={form.details} onChange={update} /></Field>
+        <div className="form-grid form-grid--two"><Field label="Response deadline"><input name="responseDeadline" type="date" value={form.responseDeadline} onChange={update} /></Field>
+          <Field label="Priority level"><select name="priority" value={form.priority} onChange={update}><option>Normal</option><option>High</option><option>Urgent</option></select></Field></div>
+        <div className="attachment-row"><span><FileCheck2 size={20} /><span><strong>Complaint evidence package</strong><small>Stored photo, coordinates and review summary</small></span></span><Badge tone="green">ATTACHED</Badge></div>
+        <div className="report-actions"><Button variant="outline" icon={Save} disabled={saving || !form.subject.trim()} onClick={() => persist("Draft")}>{saving ? "Saving…" : "Save draft"}</Button>
+          <Button icon={Send} disabled={saving || !form.subject.trim() || !form.details.trim()} onClick={() => persist("Sent")}>{saving ? "Sending…" : "Send report"}</Button></div>
+      </Panel><div className="report-side"><Panel title="Complaint summary"><div className="report-summary"><Badge tone="green">{complaint.category}</Badge>
+        <h3>{complaint.title}</h3><p>{complaint.id}</p><span><MapPin size={16} />{complaint.location}</span>
+        <span><User size={16} />{complaint.reporterName} · {complaint.reporterVerified ? "Verified" : "Unverified"}</span><StatusBadge status={complaint.status} /></div></Panel>
+        <Panel title="Report history"><div className="report-history"><span><i><FileText size={15} /></i><div>
+          <strong>{reportRecord ? `${reportRecord.status} saved` : "No report saved yet"}</strong>
+          <small>{reportRecord ? new Date(reportRecord.updated_at || reportRecord.created_at).toLocaleString() : "Complete the form and save a draft."}</small>
+        </div></span></div></Panel></div></div>
     </Shell>
+  );
+}
+
+export function ValidityReview({ navigate, complaint, showToast, reviewComplaint }) {
+  const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
+  const checks = [
+    ["Photo evidence is attached", "A stored complaint image is available.", Boolean(complaint.imagePath)],
+    ["Location information is complete", "Coordinates and a readable address are stored.", Boolean(complaint.location && complaint.latitude && complaint.longitude)],
+    ["Complaint description is specific", "The report contains a useful title and description.", Boolean(complaint.title?.trim() && complaint.description?.trim().length >= 20)],
+    ["Reporter identity is verified", "The citizen profile has passed NID verification.", complaint.reporterVerified],
+  ];
+  const passed = checks.filter((item) => item[2]).length; const confidence = Math.round((passed / checks.length) * 100);
+  const confirmValid = async () => { setSaving(true); setError("");
+    try { await reviewComplaint(complaint.databaseId, "Valid", "Evidence and consistency checks completed.");
+      showToast("Complaint confirmed as valid"); navigate("edit-complaint");
+    } catch (saveError) { setError(saveError.message || "The review could not be saved."); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Shell screen="admin-dashboard" navigate={navigate}><div className="validity-review-page">
+      <PageHeading eyebrow={`VALIDITY REVIEW · ${complaint.id}`} title="Review complaint validity"
+        description="Check the evidence and reporter record before confirming the complaint." actions={<Badge tone="gold">REVIEW QUEUE</Badge>} />
+      {error && <div className="page-error" role="alert">{error}</div>}
+      <div className="review-layout"><div className="review-main">
+        <Panel className="review-hero"><div><Badge tone="green">{complaint.category}</Badge><h2>{complaint.title}</h2><p>{complaint.id} · Submitted {complaint.date}</p></div>
+          <div className="confidence"><span><strong>{confidence}%</strong><small>validity confidence</small></span><div><i style={{ width: `${confidence}%` }} /></div><small>{passed} of {checks.length} checks passed</small></div></Panel>
+        <Panel title="Evidence and consistency checks"><div className="checklist">{checks.map(([title, text, checked]) =>
+          <article key={title}><Tick checked={checked} /><div><strong>{title}</strong><small>{text}</small></div><Badge tone={checked ? "green" : "gold"}>{checked ? "PASSED" : "REVIEW"}</Badge></article>)}</div></Panel>
+        <Panel title="Complaint snapshot"><div className="snapshot-grid"><div className="snapshot-photo"><FileText size={44} /><span>{complaint.imagePath ? "Evidence attached" : "No evidence photo"}</span></div>
+          <div><p>{complaint.description}</p><span><MapPin size={16} />{complaint.location}</span><span><BadgeCheck size={16} />Reporter identity {complaint.reporterVerified ? "verified" : "not verified"}</span></div></div></Panel>
+      </div><div className="review-side">
+        <Panel title="Reporter trust"><div className="trust-profile"><TrustRing value={complaint.reporterTrustScore} /><h3>{complaint.reporterName}</h3>
+          <p>{complaint.reporterVerified ? "Verified" : "Unverified"} citizen</p><Badge tone={complaint.reporterTrustScore >= 70 ? "green" : "gold"}>{complaint.reporterTrustScore >= 70 ? "GOOD STANDING" : "REVIEW REQUIRED"}</Badge></div>
+          <div className="trust-facts"><span><small>Trust score</small><strong>{complaint.reporterTrustScore}</strong></span><span><small>Member since</small><strong>{complaint.reporterJoined}</strong></span></div></Panel>
+        <Panel className="fairness-card"><span><ShieldCheck size={21} /></span><div><strong>Fairness check</strong><p>Base the decision only on complaint evidence and consistency. Trust score is supporting information.</p></div></Panel>
+        <Panel title="Review decision"><Button className="button--full" icon={CheckCircle2} disabled={saving} onClick={confirmValid}>{saving ? "Saving review…" : "Confirm as valid"}</Button>
+          <Button variant="danger-soft" className="button--full" icon={ShieldAlert} disabled={saving} onClick={() => navigate("point-degradation")}>Apply point penalty</Button></Panel>
+      </div></div>
+    </div></Shell>
+  );
+}
+
+export function PointDegradation({ navigate, showToast, complaint, applyPointPenalty }) {
+  const [confirmed, setConfirmed] = React.useState(false); const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
+  const deduction = 10; const currentPoints = Number(complaint.reporterTrustScore || 0); const newPoints = Math.max(0, currentPoints - deduction);
+  const applyPenalty = async () => { setSaving(true); setError("");
+    try { await applyPointPenalty(complaint.databaseId, deduction, "Evidence did not match the submitted complaint information.");
+      showToast("Point deduction applied and citizen notified"); navigate("manage-complaints");
+    } catch (saveError) { setError(saveError.message || "The point penalty could not be applied."); }
+    finally { setSaving(false); }
+  };
+  return (
+    <Shell screen="admin-dashboard" navigate={navigate}><div className="confirmation-stage"><div className="confirmation-glow" /><Panel className="penalty-card">
+      <span className="penalty-card__icon"><ShieldAlert size={30} /></span><Badge tone="red">ADMIN CONFIRMATION</Badge><h1>Confirm point degradation</h1>
+      <p>Apply a trust-point deduction only after the complaint has been reviewed and confirmed as invalid.</p>
+      {error && <div className="page-error" role="alert">{error}</div>}
+      <div className="penalty-reference"><span><FileText size={19} /><span><small>COMPLAINT</small><strong>{complaint.id} · {complaint.title}</strong></span></span><Badge tone="gold">INVALID REPORT</Badge></div>
+      <div className="point-calculation"><div><small>Current trust points</small><strong>{currentPoints}</strong></div><span><strong>−{deduction}</strong><small>Point deduction</small></span>
+        <div><small>New trust points</small><strong>{newPoints}</strong></div></div>
+      <div className="rule-card"><Flag size={19} /><span><strong>Rule PD-02 · Invalid information</strong><small>Evidence did not match the submitted complaint information after administrative review.</small></span></div>
+      <label className="appeal-check"><input type="checkbox" checked={confirmed} onChange={() => setConfirmed(!confirmed)} /><span><strong>Appeal protection acknowledged</strong>
+        <small>The citizen can request a review of this decision from the complaint-details page.</small></span></label>
+      <div className="penalty-actions"><Button variant="ghost" icon={Undo2} disabled={saving} onClick={() => navigate("validity-review")}>Return to review</Button>
+        <Button variant="danger" icon={ShieldAlert} disabled={!confirmed || saving} onClick={applyPenalty}>{saving ? "Applying penalty…" : "Confirm point penalty"}</Button></div>
+      <small className="penalty-footnote"><Shield size={14} /> This action is saved with the administrator, reason and timestamp.</small>
+    </Panel></div></Shell>
   );
 }
 
