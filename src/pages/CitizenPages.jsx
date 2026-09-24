@@ -57,7 +57,6 @@ import {
 import LeafletMap from "../components/LeafletMap";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import { statusSteps } from "../data";
 
 const Shell = ({ screen, navigate, children }) => (
   <AppShell
@@ -835,6 +834,58 @@ export function ComplaintDetails({ navigate, complaint }) {
   const item = complaint;
   const [imageUrl, setImageUrl] = React.useState("");
   const [imageLoading, setImageLoading] = React.useState(Boolean(item?.imagePath));
+  const currentStatusIndex = {
+    Pending: 0,
+    Submitted: 0,
+    "Under Review": 1,
+    Assigned: 2,
+    "In Progress": 3,
+    Resolved: 4,
+  }[item?.status] ?? 0;
+  const timelineSteps = [
+    "Submitted",
+    "Under review",
+    "Assigned",
+    "In progress",
+    "Resolved",
+  ];
+  const submittedTime = item?.createdAt
+    ? new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(item.createdAt))
+    : item?.date || "Submission recorded";
+  const statusMessages = {
+    0: {
+      title: "Your complaint has been submitted",
+      description:
+        "CleanCity has received your complaint. It is waiting for the initial review.",
+    },
+    1: {
+      title: "Your complaint is under review",
+      description:
+        "The submitted evidence and location are being checked by the review team.",
+    },
+    2: {
+      title: "A response team has been assigned",
+      description:
+        "The assigned team will review the issue and begin the required work.",
+    },
+    3: {
+      title: "The response team is working on this issue",
+      description:
+        "You will receive another notification when the work is completed.",
+    },
+    4: {
+      title: "This complaint has been resolved",
+      description:
+        "The response team has marked the reported issue as completed.",
+    },
+  };
+  const currentStatusMessage = statusMessages[currentStatusIndex];
 
   React.useEffect(() => {
     let active = true;
@@ -872,7 +923,7 @@ export function ComplaintDetails({ navigate, complaint }) {
       <PageHeading
         eyebrow={`COMPLAINT ${item.id}`}
         title={item.title}
-        description="Submitted on 08 September 2026 at 09:42 AM"
+        description={`Submitted on ${submittedTime}`}
         actions={
           <>
             <StatusBadge status={item.status} />
@@ -918,7 +969,7 @@ export function ComplaintDetails({ navigate, complaint }) {
               <span>
                 <Clock size={16} />
                 <small>Reported</small>
-                <strong>08 Sep, 09:42 AM</strong>
+                <strong>{submittedTime}</strong>
               </span>
               <span>
                 <User size={16} />
@@ -935,18 +986,30 @@ export function ComplaintDetails({ navigate, complaint }) {
         </Panel>
         <Panel title="Status timeline" className="timeline-panel">
           <div className="timeline">
-            {statusSteps.map(([label, time, complete], index) => (
-              <div key={label} className={complete ? "complete" : ""}>
-                <span>
-                  {complete ? <Check size={14} /> : <Circle size={12} />}
-                </span>
-                <div>
-                  <strong>{label}</strong>
-                  <small>{time}</small>
-                  {index === 3 && <Badge tone="blue">CURRENT</Badge>}
+            {timelineSteps.map((label, index) => {
+              const complete = index <= currentStatusIndex;
+              const time = index === 0
+                ? submittedTime
+                : index < currentStatusIndex
+                  ? "Completed"
+                  : index === currentStatusIndex
+                    ? "Current status"
+                    : "Waiting for update";
+              return (
+                <div key={label} className={complete ? "complete" : ""}>
+                  <span>
+                    {complete ? <Check size={14} /> : <Circle size={12} />}
+                  </span>
+                  <div>
+                    <strong>{label}</strong>
+                    <small>{time}</small>
+                    {index === currentStatusIndex && (
+                      <Badge tone="blue">CURRENT</Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Panel>
         <Panel title="Tagged location" className="location-card">
@@ -971,11 +1034,8 @@ export function ComplaintDetails({ navigate, complaint }) {
             <ShieldCheck size={22} />
           </span>
           <div>
-            <strong>The response team is working on this issue</strong>
-            <p>
-              The assigned North Zone team checked in at 08:15 AM. You will
-              receive a notification after completion.
-            </p>
+            <strong>{currentStatusMessage.title}</strong>
+            <p>{currentStatusMessage.description}</p>
           </div>
         </Panel>
       </div>
