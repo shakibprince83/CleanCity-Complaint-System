@@ -93,6 +93,13 @@ export default function App() {
   const [adminComplaints] = React.useState(complaintsSeed);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
   const [locationAddress, setLocationAddress] = React.useState("");
+  const [complaintDraft, setComplaintDraft] = React.useState({
+    category: "Waste",
+    equipment: false,
+    title: "",
+    description: "",
+    photoFile: null,
+  });
   const [toast, setToast] = React.useState("");
 
   React.useEffect(() => {
@@ -168,6 +175,8 @@ export default function App() {
         {...shared}
         location={location}
         locationAddress={locationAddress}
+        complaintDraft={complaintDraft}
+        setComplaintDraft={setComplaintDraft}
         addComplaint={addComplaint}
       />
     ),

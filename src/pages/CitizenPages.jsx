@@ -267,22 +267,38 @@ export function SubmitComplaint({
   navigate,
   location,
   locationAddress,
+  complaintDraft,
+  setComplaintDraft,
   addComplaint,
   showToast,
 }) {
   const { profile } = useAuth();
-  const [category, setCategory] = React.useState("Waste");
-  const [equipment, setEquipment] = React.useState(false);
-  const [preview, setPreview] = React.useState(null);
-  const [photoFile, setPhotoFile] = React.useState(null);
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
+  const {
+    category,
+    equipment,
+    title,
+    description,
+    photoFile,
+  } = complaintDraft;
+  const preview = React.useMemo(
+    () => (photoFile ? URL.createObjectURL(photoFile) : null),
+    [photoFile],
+  );
+  const updateDraft = React.useCallback(
+    (field, value) => {
+      setComplaintDraft((current) => ({ ...current, [field]: value }));
+    },
+    [setComplaintDraft],
+  );
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState("");
 
-  React.useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
+  React.useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
 
   const upload = (event) => {
     const file = event.target.files?.[0];
@@ -290,19 +306,19 @@ export function SubmitComplaint({
     if (!file) return;
     if (!["image/jpeg", "image/png"].includes(file.type)) {
       event.target.value = "";
-      setPhotoFile(null);
+      updateDraft("photoFile", null);
       setPreview(null);
       setError("Please select a JPG or PNG image.");
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
       event.target.value = "";
-      setPhotoFile(null);
+      updateDraft("photoFile", null);
       setPreview(null);
       setError("The complaint photo must be 8 MB or smaller.");
       return;
     }
-    setPhotoFile(file);
+    updateDraft("photoFile", file);
     setPreview(URL.createObjectURL(file));
   };
   const submit = async (event) => {
@@ -315,6 +331,13 @@ export function SubmitComplaint({
         location: locationAddress || profile?.residential_address || "Selected map location",
         latitude: location[0], longitude: location[1],
         imageFile: photoFile,
+      });
+      setComplaintDraft({
+        category: "Waste",
+        equipment: false,
+        title: "",
+        description: "",
+        photoFile: null,
       });
       showToast(`Complaint submitted. ID ${complaint.id} has been created.`);
       navigate("submission-confirmation");
@@ -352,7 +375,7 @@ export function SubmitComplaint({
                 type="button"
                 key={name}
                 className={category === name ? "selected" : ""}
-                onClick={() => setCategory(name)}
+                onClick={() => updateDraft("category", name)}
               >
                 <span>
                   <Icon size={22} />
@@ -367,7 +390,7 @@ export function SubmitComplaint({
             <Field label="Short title">
               <input
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
+                onChange={(event) => updateDraft("title", event.target.value)}
                 required
               />
             </Field>
@@ -388,7 +411,7 @@ export function SubmitComplaint({
             <textarea
               rows="5"
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(event) => updateDraft("description", event.target.value)}
               required
             />
           </Field>
@@ -429,7 +452,7 @@ export function SubmitComplaint({
                 <input
                   type="checkbox"
                   checked={equipment}
-                  onChange={() => setEquipment(!equipment)}
+                  onChange={() => updateDraft("equipment", !equipment)}
                 />
                 <i />
               </label>
