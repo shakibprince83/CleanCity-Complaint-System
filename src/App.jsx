@@ -3,7 +3,7 @@ import React from "react";
 import { ThemeToggle, Toast } from "./components/Common";
 import { useAuth } from "./context/AuthContext";
 import { useCitizenData } from "./context/CitizenDataContext";
-import { complaintsSeed, usersSeed } from "./data";
+import { useAdminData } from "./context/AdminDataContext";
 import {
   HomePage,
   LoginPage,
@@ -60,6 +60,19 @@ const knownScreens = new Set([
 ]);
 
 // Citizen pages require an authenticated Supabase session.
+const protectedAdminScreens = new Set([
+  "admin-dashboard",
+  "manage-complaints",
+  "edit-complaint",
+  "admin-profile",
+  "user-management",
+  "edit-user",
+  "verification-review",
+  "report-authority",
+  "validity-review",
+  "point-degradation",
+]);
+
 const protectedCitizenScreens = new Set([
   "citizen-dashboard",
   "submit-complaint",
@@ -77,7 +90,12 @@ function screenFromHash() {
 }
 
 export default function App() {
-  const { user, loading: authLoading } = useAuth();
+  const {
+    user,
+    profile,
+    loading: authLoading,
+    profileLoading,
+  } = useAuth();
   const {
     complaints: citizenComplaints,
     notifications,
@@ -86,12 +104,25 @@ export default function App() {
     markNotificationRead,
     markAllRead,
   } = useCitizenData();
+  const {
+    complaints: adminComplaints,
+    users: adminUsers,
+    loading: adminDataLoading,
+    error: adminDataError,
+    refresh: refreshAdminData,
+    updateComplaint,
+    updateUser,
+  } = useAdminData();
   // Shared interface state used by the public, citizen and administrator pages.
+  const hasAdminAccess =
+    profile?.role === "admin" && profile?.account_status === "active";
   const [screen, setScreen] = React.useState(screenFromHash);
   const [theme, setTheme] = React.useState(
     () => document.documentElement.dataset.theme || "dark",
   );
-  const [adminComplaints] = React.useState(complaintsSeed);
+  const [selectedAdminComplaintId, setSelectedAdminComplaintId] =
+    React.useState(null);
+  const [selectedUserId, setSelectedUserId] = React.useState(null);
   const [location, setLocation] = React.useState([23.7808, 90.4071]);
   const [locationAddress, setLocationAddress] = React.useState("");
   const [selectedComplaintId, setSelectedComplaintId] = React.useState(null);
@@ -129,6 +160,16 @@ export default function App() {
   const navigate = React.useCallback(
     (nextScreen, options = {}) => {
       if (
+        protectedAdminScreens.has(nextScreen) &&
+        (!user || !hasAdminAccess) &&
+        !authLoading &&
+        !profileLoading &&
+        !options.authenticated
+      ) {
+        window.location.hash = user ? "/citizen-dashboard" : "/login";
+        return;
+      }
+      if (
         protectedCitizenScreens.has(nextScreen) &&
         !user &&
         !authLoading &&
@@ -144,7 +185,7 @@ export default function App() {
       }
       window.location.hash = `/${nextScreen}`;
     },
-    [authLoading, user],
+    [authLoading, hasAdminAccess, profileLoading, user],
   );
 
   const showToast = React.useCallback((message) => setToast(message), []);
@@ -156,10 +197,19 @@ export default function App() {
   const activeComplaint =
     citizenComplaints.find((item) => item.databaseId === selectedComplaintId) ||
     citizenComplaints[0];
-  const activeAdminComplaint = adminComplaints[0];
-  const activeUser = usersSeed[0];
+  const activeAdminComplaint =
+    adminComplaints.find((item) => item.databaseId === selectedAdminComplaintId) ||
+    adminComplaints[0];
+  const activeUser =
+    adminUsers.find((item) => item.id === selectedUserId) || adminUsers[0];
   const displayScreen =
-    protectedCitizenScreens.has(screen) && !user ? "login" : screen;
+    protectedAdminScreens.has(screen) && !hasAdminAccess
+      ? user
+        ? "citizen-dashboard"
+        : "login"
+      : protectedCitizenScreens.has(screen) && !user
+        ? "login"
+        : screen;
 
   // Screen registry: each route name maps to its matching React page component.
   const screens = {
@@ -228,27 +278,97 @@ export default function App() {
         }}
       />
     ),
-    "admin-dashboard": <AdminDashboard {...shared} complaints={adminComplaints} />,
+    "admin-dashboard": (
+      <AdminDashboard
+        {...shared}
+        complaints={adminComplaints}
+        loading={adminDataLoading}
+        error={adminDataError}
+        refresh={refreshAdminData}
+        selectComplaint={(complaint) => {
+          setSelectedAdminComplaintId(complaint.databaseId);
+          navigate("edit-complaint");
+        }}
+      />
+    ),
     "admin-profile": <AdminProfile {...shared} />,
     "manage-complaints": (
-      <ManageComplaints {...shared} complaints={adminComplaints} />
+      <ManageComplaints
+        {...shared}
+        complaints={adminComplaints}
+        loading={adminDataLoading}
+        error={adminDataError}
+        refresh={refreshAdminData}
+        selectComplaint={(complaint) => {
+          setSelectedAdminComplaintId(complaint.databaseId);
+          navigate("edit-complaint");
+        }}
+      />
     ),
-    "edit-complaint": <EditComplaint {...shared} complaint={activeAdminComplaint} />,
-    "user-management": <UserManagement {...shared} users={usersSeed} />,
-    "edit-user": <EditUser {...shared} user={activeUser} />,
-    "verification-review": <VerificationReview {...shared} user={activeUser} />,
+    "edit-complaint": activeAdminComplaint ? (
+      <EditComplaint
+        {...shared}
+        complaint={activeAdminComplaint}
+        updateComplaint={updateComplaint}
+      />
+    ) : (
+      <ManageComplaints
+        {...shared}
+        complaints={adminComplaints}
+        loading={adminDataLoading}
+        error={adminDataError}
+        refresh={refreshAdminData}
+      />
+    ),
+    "user-management": (
+      <UserManagement
+        {...shared}
+        users={adminUsers}
+        loading={adminDataLoading}
+        error={adminDataError}
+        refresh={refreshAdminData}
+        selectUser={(selectedUser) => {
+          setSelectedUserId(selectedUser.id);
+          navigate("edit-user");
+        }}
+      />
+    ),
+    "edit-user": activeUser ? (
+      <EditUser {...shared} user={activeUser} updateUser={updateUser} />
+    ) : (
+      <UserManagement
+        {...shared}
+        users={adminUsers}
+        loading={adminDataLoading}
+        error={adminDataError}
+        refresh={refreshAdminData}
+      />
+    ),
+    "verification-review": activeUser ? (
+      <VerificationReview {...shared} user={activeUser} />
+    ) : (
+      <UserManagement {...shared} users={adminUsers} />
+    ),
     "report-authority": (
-      <ReportAuthority {...shared} complaint={activeAdminComplaint} />
+      activeAdminComplaint ? (
+        <ReportAuthority {...shared} complaint={activeAdminComplaint} />
+      ) : (
+        <ManageComplaints {...shared} complaints={adminComplaints} />
+      )
     ),
     "validity-review": (
-      <ValidityReview {...shared} complaint={activeAdminComplaint} />
+      activeAdminComplaint ? (
+        <ValidityReview {...shared} complaint={activeAdminComplaint} />
+      ) : (
+        <ManageComplaints {...shared} complaints={adminComplaints} />
+      )
     ),
     "point-degradation": <PointDegradation {...shared} />,
   };
 
   return (
     <>
-      {authLoading ? (
+      {authLoading || (user && profileLoading) ? (
         <main className="auth-loading" role="status" aria-live="polite">
           <span className="auth-spinner" />
           <strong>Restoring your secure session…</strong>

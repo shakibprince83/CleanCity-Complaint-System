@@ -298,7 +298,9 @@ export function AppShell({
   const { user, profile, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
   const citizenName = profile?.full_name || user?.email || "Citizen";
-  const citizenInitials = citizenName
+  const adminName = profile?.full_name || user?.email || "Administrator";
+  const activeName = type === "admin" ? adminName : citizenName;
+  const citizenInitials = activeName
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0])
@@ -365,15 +367,15 @@ export function AppShell({
               }
             >
               <span className="avatar">
-                {type === "admin" ? "DA" : citizenInitials || "C"}
+                {citizenInitials || (type === "admin" ? "A" : "C")}
               </span>
               <span>
                 <strong>
-                  {type === "admin" ? "Demo Administrator" : citizenName}
+                  {activeName}
                 </strong>
                 <small>
                   {type === "admin"
-                    ? "System Administrator"
+                    ? profile?.admin_title || "System Administrator"
                     : profile?.nid_verified
                       ? "Verified Citizen"
                       : "Citizen Account"}

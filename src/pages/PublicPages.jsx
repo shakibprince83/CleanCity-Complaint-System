@@ -229,7 +229,12 @@ export function RegistrationPage({ navigate, showToast }) {
       const data = await signUp({ ...form, password, role });
       if (data.session) {
         showToast("Account created successfully");
-        navigate("citizen-dashboard", { authenticated: true });
+        navigate(
+          data.profile?.role === "admin" && data.profile?.account_status === "active"
+            ? "admin-dashboard"
+            : "citizen-dashboard",
+          { authenticated: true },
+        );
       } else {
         showToast("Account created. Check your email to confirm your account.");
         navigate("login");
@@ -249,20 +254,20 @@ export function RegistrationPage({ navigate, showToast }) {
     >
       <form className="auth-form" onSubmit={submit}>
         <div className="role-select">
-          {["Citizen", "Volunteer"].map((item) => (
+          {["Citizen", "Admin"].map((item) => (
             <button
               type="button"
               key={item}
               className={role === item ? "selected" : ""}
               onClick={() => setRole(item)}
             >
-              {item === "Citizen" ? <User size={20} /> : <Leaf size={20} />}
+              {item === "Citizen" ? <User size={20} /> : <ShieldCheck size={20} />}
               <span>
                 <strong>{item}</strong>
                 <small>
                   {item === "Citizen"
                     ? "Report and track issues"
-                    : "Optional community participation"}
+                    : "Secure city operations access"}
                 </small>
               </span>
               <i>{role === item && <CircleCheck size={17} />}</i>
@@ -466,11 +471,18 @@ export function LoginPage({ navigate, showToast }) {
     setError("");
     setSubmitting(true);
     try {
-      await signIn(email, password);
-      let destination = "citizen-dashboard";
+      const data = await signIn(email, password);
+      let destination =
+        data.profile?.role === "admin" && data.profile?.account_status === "active"
+            ? "admin-dashboard"
+            : "citizen-dashboard";
       try {
-        destination =
-          sessionStorage.getItem("cleancity-return-to") || destination;
+        const requestedDestination = sessionStorage.getItem("cleancity-return-to");
+        const isAdminDestination = requestedDestination?.startsWith("admin-") ||
+          ["manage-complaints", "user-management", "edit-complaint", "edit-user"].includes(requestedDestination);
+        destination = requestedDestination && (!isAdminDestination || data.profile?.role === "admin" && data.profile?.account_status === "active")
+          ? requestedDestination
+          : destination;
         sessionStorage.removeItem("cleancity-return-to");
       } catch {
         // Continue to the dashboard if browser storage is unavailable.

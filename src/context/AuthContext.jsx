@@ -100,8 +100,22 @@ export function AuthProvider({ children }) {
       throw new Error("An account already exists with this NID number.");
     }
 
+    const normalizedEmail = values.email.trim().toLowerCase();
+    if (values.role === "Admin") {
+      const { data: invited, error: inviteError } = await supabase.rpc(
+        "admin_invite_is_valid",
+        { candidate_email: normalizedEmail },
+      );
+      if (inviteError) throw inviteError;
+      if (!invited) {
+        throw new Error(
+          "This email has not been invited as an administrator. Ask an existing administrator to create an invitation first.",
+        );
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({
-      email: values.email.trim().toLowerCase(),
+      email: normalizedEmail,
       password: values.password,
       options: {
         data: {
@@ -110,13 +124,18 @@ export function AuthProvider({ children }) {
           residential_address: values.address.trim(),
           nid_last4: nidCheck.normalizedNid.slice(-4),
           nid_fingerprint: nidCheck.fingerprint,
+          requested_role: values.role === "Admin" ? "admin" : "citizen",
         },
       },
     });
 
     if (error) throw error;
+    if (data.session?.user?.id) {
+      const createdProfile = await loadProfile(data.session.user.id);
+      return { ...data, profile: createdProfile };
+    }
     return data;
-  }, [checkNidAvailability]);
+  }, [checkNidAvailability, loadProfile]);
 
   const signIn = React.useCallback(async (email, password) => {
     if (!supabase) throw new Error(missingConfigurationMessage);
@@ -127,8 +146,9 @@ export function AuthProvider({ children }) {
     });
 
     if (error) throw error;
-    return data;
-  }, []);
+    const signedInProfile = await loadProfile(data.user.id);
+    return { ...data, profile: signedInProfile };
+  }, [loadProfile]);
 
   const signOut = React.useCallback(async () => {
     if (!supabase) return;
@@ -151,6 +171,12 @@ export function AuthProvider({ children }) {
           residential_address: updates.address.trim(),
           preferred_language: updates.preferredLanguage,
           notification_enabled: updates.notificationEnabled,
+          ...(updates.department !== undefined
+            ? { department: updates.department.trim() }
+            : {}),
+          ...(updates.adminTitle !== undefined
+            ? { admin_title: updates.adminTitle.trim() }
+            : {}),
         })
         .eq("id", session.user.id)
         .select("*")
