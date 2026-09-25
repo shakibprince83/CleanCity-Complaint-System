@@ -2989,3 +2989,159 @@ html[data-theme="light"] .delete-modal {
     flex: 1;
   }
 }
+
+
+/* PAGE — User Management: complaint totals and citizen complaint picker. */
+.complaint-count-button {
+  min-width: 38px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 10px;
+  border: 1px solid rgba(83, 218, 144, 0.34);
+  border-radius: 11px;
+  color: var(--primary);
+  background: rgba(83, 218, 144, 0.1);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+.complaint-count-button:hover:not(:disabled) {
+  color: #062216;
+  background: var(--primary);
+  transform: translateY(-1px);
+}
+.complaint-count-button:disabled {
+  color: var(--muted);
+  background: var(--surface-soft);
+  border-color: var(--line);
+  cursor: default;
+  opacity: 0.7;
+}
+.complaint-list-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 18, 11, 0.72);
+  backdrop-filter: blur(7px);
+}
+.complaint-list-modal {
+  width: min(680px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+  animation: delete-modal-enter 180ms ease-out;
+}
+.complaint-list-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.complaint-list-modal__header small {
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+.complaint-list-modal__header h2 {
+  margin: 5px 0 3px;
+  color: var(--text);
+  font-size: 22px;
+}
+.complaint-list-modal__header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.complaint-list-modal__close {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+.complaint-list-modal__close:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+.complaint-list-modal__body {
+  overflow-y: auto;
+  padding: 10px 18px 18px;
+}
+.complaint-list-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+.complaint-list-item:hover {
+  border-radius: 13px;
+  background: rgba(83, 218, 144, 0.08);
+}
+.complaint-list-item__icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--primary);
+  background: rgba(83, 218, 144, 0.1);
+}
+.complaint-list-item strong,
+.complaint-list-item small {
+  display: block;
+}
+.complaint-list-item strong {
+  color: var(--text);
+  font-size: 12px;
+}
+.complaint-list-item small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+html[data-theme="light"] .complaint-list-backdrop {
+  background: rgba(13, 45, 29, 0.45);
+}
+html[data-theme="light"] .complaint-list-modal {
+  background: #fbfefc;
+  box-shadow: 0 28px 80px rgba(27, 69, 43, 0.24);
+}
+@media (max-width: 640px) {
+  .complaint-list-item {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .complaint-list-item .status-badge {
+    display: none;
+  }
+}
