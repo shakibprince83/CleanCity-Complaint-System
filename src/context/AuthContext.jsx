@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [profileLoading, setProfileLoading] = React.useState(false);
+  const [passwordRecovery, setPasswordRecovery] = React.useState(false);
 
   const loadProfile = React.useCallback(async (userId) => {
     if (!supabase || !userId) {
@@ -57,9 +58,13 @@ export function AuthProvider({ children }) {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
+      (event, nextSession) => {
         setSession(nextSession);
         if (!nextSession) setProfile(null);
+        if (event === "PASSWORD_RECOVERY") {
+          setPasswordRecovery(true);
+          window.location.hash = "/reset-password";
+        }
         setLoading(false);
       },
     );
@@ -162,6 +167,49 @@ export function AuthProvider({ children }) {
     return { ...data, profile: signedInProfile };
   }, [loadProfile]);
 
+  const requestPasswordReset = React.useCallback(async (email) => {
+    if (!supabase) throw new Error(missingConfigurationMessage);
+    const resetEmail = email.trim();
+    if (!resetEmail) throw new Error("Enter your registered email address.");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: window.location.origin,
+    });
+    if (error) throw error;
+  }, []);
+
+  const updateRecoveredPassword = React.useCallback(async (newPassword) => {
+    if (!supabase) throw new Error(missingConfigurationMessage);
+    if (!session?.user?.email || !passwordRecovery) {
+      throw new Error("Open the latest password reset link sent to your email.");
+    }
+    if (newPassword.length < 8) {
+      throw new Error("Password must contain at least 8 characters.");
+    }
+
+    const currentPasswordCheck = await supabase.auth.signInWithPassword({
+      email: session.user.email,
+      password: newPassword,
+    });
+
+    if (!currentPasswordCheck.error) {
+      throw new Error("The new password cannot be the same as your current password.");
+    }
+
+    const isExpectedMismatch =
+      currentPasswordCheck.error.message
+        ?.toLowerCase()
+        .includes("invalid login credentials");
+    if (!isExpectedMismatch) throw currentPasswordCheck.error;
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+
+    setPasswordRecovery(false);
+    await supabase.auth.signOut();
+    setProfile(null);
+  }, [passwordRecovery, session?.user?.email]);
+
   const signOut = React.useCallback(async () => {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
@@ -209,9 +257,12 @@ export function AuthProvider({ children }) {
       profile,
       loading,
       profileLoading,
+      passwordRecovery,
       signUp,
       checkNidAvailability,
       signIn,
+      requestPasswordReset,
+      updateRecoveredPassword,
       signOut,
       updateProfile,
       refreshProfile: () => loadProfile(session?.user?.id),
@@ -221,9 +272,12 @@ export function AuthProvider({ children }) {
       profile,
       loading,
       profileLoading,
+      passwordRecovery,
       signUp,
       checkNidAvailability,
       signIn,
+      requestPasswordReset,
+      updateRecoveredPassword,
       signOut,
       updateProfile,
       loadProfile,
