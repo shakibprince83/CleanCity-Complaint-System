@@ -325,6 +325,11 @@ export default function App() {
       <UserManagement
         {...shared}
         users={adminUsers}
+        complaints={adminComplaints}
+        onOpenComplaint={(complaint) => {
+          setSelectedAdminComplaintId(complaint.databaseId);
+          navigate("edit-complaint");
+        }}
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
@@ -341,6 +346,11 @@ export default function App() {
       <UserManagement
         {...shared}
         users={adminUsers}
+        complaints={adminComplaints}
+        onOpenComplaint={(complaint) => {
+          setSelectedAdminComplaintId(complaint.databaseId);
+          navigate("edit-complaint");
+        }}
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
