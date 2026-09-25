@@ -42,7 +42,6 @@ export const uiScreens = [
         "Evidence, location and status timeline",
       ],
       ["profile", "Profile", "Citizen identity and preferences"],
-      ["notifications", "Notifications", "Updates and unread messages"],
     ],
   },
   {
@@ -235,6 +234,5 @@ export const citizenSidebar = [
   ["citizen-dashboard", "Dashboard"],
   ["submit-complaint", "New complaint"],
   ["my-complaints", "My complaints"],
-  ["notifications", "Notifications"],
   ["profile", "Profile"],
 ];
