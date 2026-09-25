@@ -3740,3 +3740,156 @@ select:focus {
   background: rgba(10, 35, 23, 0.92);
   backdrop-filter: blur(18px);
 }
+
+
+/* Citizen dashboard readability */
+.screen-citizen-dashboard .workspace__content {
+  font-size: 15px;
+}
+.screen-citizen-dashboard .page-heading {
+  margin-bottom: 32px;
+}
+.screen-citizen-dashboard .page-heading h1 {
+  font-size: clamp(36px, 3.4vw, 48px);
+  letter-spacing: -2px;
+}
+.screen-citizen-dashboard .page-heading p {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 520;
+  line-height: 1.55;
+}
+.screen-citizen-dashboard .eyebrow {
+  font-size: 12px;
+  letter-spacing: 1.7px;
+}
+.screen-citizen-dashboard .stats-grid {
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.screen-citizen-dashboard .stat-card {
+  min-height: 162px;
+  padding: 22px;
+  border-color: var(--line-strong);
+}
+.screen-citizen-dashboard .stat-card__top {
+  color: #c7dace;
+  font-size: 13px;
+  font-weight: 650;
+}
+.screen-citizen-dashboard .stat-card__icon {
+  width: 40px;
+  height: 40px;
+}
+.screen-citizen-dashboard .stat-card > strong {
+  margin-top: 18px;
+  font-size: 39px;
+}
+.screen-citizen-dashboard .stat-card > small {
+  color: #a8c0b3;
+  font-size: 11px;
+  font-weight: 550;
+}
+.screen-citizen-dashboard .panel {
+  padding: 25px;
+  border-color: var(--line-strong);
+}
+.screen-citizen-dashboard .panel__header h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+.screen-citizen-dashboard .panel__header .button {
+  font-size: 12px;
+}
+.screen-citizen-dashboard .complaint-list {
+  gap: 6px;
+}
+.screen-citizen-dashboard .complaint-row {
+  gap: 13px;
+  padding: 14px 10px;
+  border: 1px solid transparent;
+}
+.screen-citizen-dashboard .complaint-row:hover {
+  border-color: var(--line);
+  background: rgba(92, 222, 152, 0.07);
+}
+.screen-citizen-dashboard .category-icon {
+  width: 44px;
+  height: 44px;
+}
+.screen-citizen-dashboard .complaint-row__main strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+.screen-citizen-dashboard .complaint-row__main small {
+  margin-top: 5px;
+  color: #9eb7aa;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.screen-citizen-dashboard .complaint-row__main small span {
+  color: #bfd2c7;
+  font-weight: 650;
+}
+.screen-citizen-dashboard .impact-score h3 {
+  font-size: 19px;
+}
+.screen-citizen-dashboard .impact-score p {
+  font-size: 12px;
+  line-height: 1.55;
+}
+.screen-citizen-dashboard .micro-bars i span {
+  font-size: 9.5px;
+}
+.screen-citizen-dashboard .zone-panel__bottom,
+.screen-citizen-dashboard .zone-panel__bottom button {
+  font-size: 12px;
+}
+.screen-citizen-dashboard .action-panel h3 {
+  font-size: 20px;
+}
+.screen-citizen-dashboard .action-panel p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.screen-citizen-dashboard .sidebar__nav button,
+.screen-citizen-dashboard .sidebar__bottom button {
+  font-size: 13.5px;
+}
+.screen-citizen-dashboard .sidebar__eco > span {
+  font-size: 10.5px;
+}
+.screen-citizen-dashboard .sidebar__eco > strong {
+  font-size: 26px;
+}
+.screen-citizen-dashboard .sidebar__eco > small {
+  color: #8da79a;
+  font-size: 9.5px;
+}
+.screen-citizen-dashboard .profile-chip strong {
+  font-size: 12px;
+}
+.screen-citizen-dashboard .profile-chip small {
+  font-size: 9.5px;
+}
+html[data-theme="light"] .screen-citizen-dashboard .page-heading p,
+html[data-theme="light"] .screen-citizen-dashboard .complaint-row__main small,
+html[data-theme="light"] .screen-citizen-dashboard .impact-score p {
+  color: #527064;
+}
+html[data-theme="light"] .screen-citizen-dashboard .stat-card__top {
+  color: #395d4d;
+}
+html[data-theme="light"] .screen-citizen-dashboard .stat-card > small {
+  color: #557466;
+}
+html[data-theme="light"] .screen-citizen-dashboard .complaint-row__main small span {
+  color: #49695b;
+}
+html[data-theme="light"] .screen-citizen-dashboard .sidebar__nav button,
+html[data-theme="light"] .screen-citizen-dashboard .sidebar__bottom button {
+  color: #557568;
+}
+html[data-theme="light"] .screen-citizen-dashboard .sidebar__nav button.active {
+  color: #087442;
+}
