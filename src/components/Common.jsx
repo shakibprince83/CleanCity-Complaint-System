@@ -221,9 +221,8 @@ export function Panel({ children, className = "", title, action }) {
 
 function SideNav({ type, active, navigate, open, close, onSignOut }) {
   const items = type === "admin" ? adminSidebar : citizenSidebar;
-  const { complaints: citizenComplaints, notifications } = useCitizenData();
+  const { complaints: citizenComplaints } = useCitizenData();
   const [adminComplaints, setAdminComplaints] = React.useState([]);
-  const unreadCount = notifications.filter((item) => item.unread).length;
 
   React.useEffect(() => {
     let activeRequest = true;
@@ -289,9 +288,6 @@ function SideNav({ type, active, navigate, open, close, onSignOut }) {
             >
               <Icon size={19} />
               <span>{label}</span>
-              {id === "notifications" && unreadCount > 0 && (
-                <span className="nav-count">{unreadCount}</span>
-              )}
             </button>
           );
         })}
@@ -343,6 +339,16 @@ export function AppShell({
     markRead: markAdminNotificationRead,
     markAllRead: markAllAdminNotificationsRead,
   } = useAdminNotifications(type === "admin");
+  const {
+    notifications: citizenNotifications,
+    loading: citizenNotificationsLoading,
+    error: citizenNotificationsError,
+    markNotificationRead,
+    markAllRead: markAllCitizenNotificationsRead,
+  } = useCitizenData();
+  const citizenUnreadCount = citizenNotifications.filter(
+    (item) => item.unread,
+  ).length;
   const citizenName = profile?.full_name || user?.email || "Citizen";
   const adminName = profile?.full_name || user?.email || "Administrator";
   const activeName = type === "admin" ? adminName : citizenName;
@@ -408,6 +414,25 @@ export function AppShell({
       navigate("admin-dashboard");
     } catch (notificationError) {
       console.error("Unable to open administrator notification", notificationError);
+    }
+  };
+
+  const openCitizenNotification = async (notification) => {
+    try {
+      if (notification.unread) {
+        await markNotificationRead(notification.id);
+      }
+      setNotificationsOpen(false);
+
+      if (notification.complaintId) {
+        navigate("complaint-details", {
+          citizenComplaintId: notification.complaintId,
+        });
+      } else {
+        navigate("citizen-dashboard");
+      }
+    } catch (notificationError) {
+      console.error("Unable to open citizen notification", notificationError);
     }
   };
 
@@ -535,11 +560,75 @@ export function AppShell({
                 )}
               </div>
             ) : (
-              <IconButton
-                icon={Bell}
-                label="Notifications"
-                onClick={() => navigate("notifications")}
-              />
+              <div className="admin-notification-menu" ref={notificationRef}>
+                <IconButton
+                  icon={Bell}
+                  label="Citizen notifications"
+                  className={citizenUnreadCount ? "icon-button--unread" : ""}
+                  aria-expanded={notificationsOpen}
+                  onClick={() => setNotificationsOpen((current) => !current)}
+                />
+                {citizenUnreadCount > 0 && (
+                  <span className="admin-notification-count">
+                    {citizenUnreadCount > 99 ? "99+" : citizenUnreadCount}
+                  </span>
+                )}
+                {notificationsOpen && (
+                  <section
+                    className="admin-notification-popover"
+                    aria-label="Citizen notifications"
+                  >
+                    <header>
+                      <span>
+                        <strong>Notifications</strong>
+                        <small>{citizenUnreadCount} unread</small>
+                      </span>
+                      {citizenUnreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => markAllCitizenNotificationsRead()}
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </header>
+                    <div className="admin-notification-list">
+                      {citizenNotificationsLoading ? (
+                        <p className="admin-notification-state">
+                          Loading notifications…
+                        </p>
+                      ) : citizenNotificationsError ? (
+                        <p className="admin-notification-state admin-notification-state--error">
+                          {citizenNotificationsError}
+                        </p>
+                      ) : citizenNotifications.length ? (
+                        citizenNotifications.map((notification) => (
+                          <button
+                            type="button"
+                            key={notification.id}
+                            className={`admin-notification-item ${notification.unread ? "" : "admin-notification-item--read"}`}
+                            onClick={() => openCitizenNotification(notification)}
+                          >
+                            <span
+                              className={`admin-notification-item__dot admin-notification-item__dot--${notification.tone}`}
+                            />
+                            <span>
+                              <strong>{notification.title}</strong>
+                              <small>{notification.message}</small>
+                              <time>{notification.time}</time>
+                            </span>
+                            <ChevronRight size={16} />
+                          </button>
+                        ))
+                      ) : (
+                        <p className="admin-notification-state">
+                          No complaint notifications yet.
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
             )}
             <button
               className="profile-chip"
