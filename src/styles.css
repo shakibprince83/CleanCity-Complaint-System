@@ -3116,8 +3116,7 @@ select:focus {
 }
 .notification-layout {
   display: grid;
-  grid-template-columns: 1.4fr 0.6fr;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
 }
 .notification-list {
   display: grid;
