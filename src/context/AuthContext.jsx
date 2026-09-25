@@ -100,7 +100,8 @@ export function AuthProvider({ children }) {
       throw new Error("An account already exists with this NID number.");
     }
 
-    const normalizedEmail = values.email.trim().toLowerCase();
+    const registeredEmail = values.email.trim();
+    const normalizedEmail = registeredEmail.toLowerCase();
     if (values.role === "Admin") {
       const { data: invited, error: inviteError } = await supabase.rpc(
         "admin_invite_is_valid",
@@ -115,7 +116,7 @@ export function AuthProvider({ children }) {
     }
 
     const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
+      email: registeredEmail,
       password: values.password,
       options: {
         data: {
@@ -125,6 +126,7 @@ export function AuthProvider({ children }) {
           nid_last4: nidCheck.normalizedNid.slice(-4),
           nid_fingerprint: nidCheck.fingerprint,
           requested_role: values.role === "Admin" ? "admin" : "citizen",
+          registered_email: registeredEmail,
         },
       },
     });
@@ -140,13 +142,25 @@ export function AuthProvider({ children }) {
   const signIn = React.useCallback(async (email, password) => {
     if (!supabase) throw new Error(missingConfigurationMessage);
 
+    const enteredEmail = email.trim();
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
+      email: enteredEmail,
       password,
     });
 
     if (error) throw error;
     const signedInProfile = await loadProfile(data.user.id);
+    const registeredEmail =
+      signedInProfile?.email || data.user?.user_metadata?.registered_email;
+
+    if (!registeredEmail || enteredEmail !== registeredEmail) {
+      await supabase.auth.signOut();
+      setProfile(null);
+      throw new Error(
+        "The email address must exactly match the uppercase and lowercase letters used during registration.",
+      );
+    }
+
     return { ...data, profile: signedInProfile };
   }, [loadProfile]);
 
