@@ -182,13 +182,19 @@ export function StatCard({
   );
 }
 
-export function SearchBox({ value, onChange, placeholder = "Search" }) {
+export function SearchBox({
+  value,
+  onChange,
+  placeholder = "Search",
+  onFocus,
+}) {
   return (
     <label className="search-box">
       <Search size={18} />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={onFocus}
         placeholder={placeholder}
       />
     </label>
@@ -330,7 +336,10 @@ export function AppShell({
   const { user, profile, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const notificationRef = React.useRef(null);
+  const searchRef = React.useRef(null);
   const {
     notifications: adminNotifications,
     unreadCount: adminUnreadCount,
@@ -340,6 +349,7 @@ export function AppShell({
     markAllRead: markAllAdminNotificationsRead,
   } = useAdminNotifications(type === "admin");
   const {
+    complaints: citizenComplaints,
     notifications: citizenNotifications,
     loading: citizenNotificationsLoading,
     error: citizenNotificationsError,
@@ -349,6 +359,22 @@ export function AppShell({
   const citizenUnreadCount = citizenNotifications.filter(
     (item) => item.unread,
   ).length;
+  const complaintSuggestions = React.useMemo(() => {
+    if (type !== "citizen" || !searchQuery.trim()) return [];
+    const query = searchQuery.trim().toLowerCase();
+    return citizenComplaints
+      .filter((complaint) =>
+        [
+          complaint.id,
+          complaint.title,
+          complaint.category,
+          complaint.location,
+          complaint.description,
+          complaint.status,
+        ].some((value) => String(value || "").toLowerCase().includes(query)),
+      )
+      .slice(0, 5);
+  }, [citizenComplaints, searchQuery, type]);
   const citizenName = profile?.full_name || user?.email || "Citizen";
   const adminName = profile?.full_name || user?.email || "Administrator";
   const activeName = type === "admin" ? adminName : citizenName;
@@ -358,6 +384,19 @@ export function AppShell({
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+  React.useEffect(() => {
+    if (!searchOpen) return undefined;
+
+    const closeSearch = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeSearch);
+    return () => document.removeEventListener("mousedown", closeSearch);
+  }, [searchOpen]);
 
   React.useEffect(() => {
     if (!notificationsOpen) return undefined;
@@ -472,15 +511,54 @@ export function AppShell({
             className="topbar__menu"
             onClick={() => setOpen(true)}
           />
-          <SearchBox
-            value=""
-            onChange={() => {}}
-            placeholder={
-              type === "admin"
-                ? "Search complaints, users or reports"
-                : "Search your complaints"
-            }
-          />
+          <div className="topbar-search" ref={searchRef}>
+            <SearchBox
+              value={searchQuery}
+              onChange={(value) => {
+                setSearchQuery(value);
+                setSearchOpen(Boolean(value.trim()));
+              }}
+              onFocus={() => setSearchOpen(Boolean(searchQuery.trim()))}
+              placeholder={
+                type === "admin"
+                  ? "Search complaints, users or reports"
+                  : "Search your complaints"
+              }
+            />
+            {type === "citizen" && searchOpen && searchQuery.trim() && (
+              <section className="search-suggestions" aria-label="Complaint search suggestions">
+                {complaintSuggestions.length ? (
+                  complaintSuggestions.map((complaint) => (
+                    <button
+                      type="button"
+                      key={complaint.databaseId}
+                      onClick={() => {
+                        setSearchQuery(complaint.title);
+                        setSearchOpen(false);
+                        navigate("complaint-details", {
+                          citizenComplaintId: complaint.databaseId,
+                        });
+                      }}
+                    >
+                      <span className="search-suggestions__icon">
+                        <FileText size={17} />
+                      </span>
+                      <span>
+                        <strong>{complaint.title}</strong>
+                        <small>
+                          {complaint.id} · {complaint.category} · {complaint.status}
+                        </small>
+                        <small>{complaint.location}</small>
+                      </span>
+                      <ChevronRight size={16} />
+                    </button>
+                  ))
+                ) : (
+                  <p>No matching complaints found.</p>
+                )}
+              </section>
+            )}
+          </div>
           <div className="topbar__actions">
             {type === "admin" ? (
               <div className="admin-notification-menu" ref={notificationRef}>
