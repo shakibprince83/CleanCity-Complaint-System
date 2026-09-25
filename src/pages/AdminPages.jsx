@@ -475,6 +475,18 @@ export function EditComplaint({
               </Button>
             </div>
           </Panel>
+          <Panel title="Complaint validity">
+            <p className="panel-helper-text">
+              Review the stored evidence, location and reporter information before making a validity decision.
+            </p>
+            <Button
+              className="button--full"
+              icon={ShieldCheck}
+              onClick={() => navigate("validity-review")}
+            >
+              Check validity
+            </Button>
+          </Panel>
         </div>
       </div>
     </Shell>
@@ -838,11 +850,24 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
     ["Reporter identity is verified", "The citizen profile has passed NID verification.", complaint.reporterVerified],
   ];
   const passed = checks.filter((item) => item[2]).length; const confidence = Math.round((passed / checks.length) * 100);
-  const confirmValid = async () => { setSaving(true); setError("");
-    try { await reviewComplaint(complaint.databaseId, "Valid", "Evidence and consistency checks completed.");
-      showToast("Complaint confirmed as valid"); navigate("edit-complaint");
-    } catch (saveError) { setError(saveError.message || "The review could not be saved."); }
-    finally { setSaving(false); }
+  const saveDecision = async (decision) => {
+    setSaving(true);
+    setError("");
+    try {
+      await reviewComplaint(
+        complaint.databaseId,
+        decision,
+        decision === "Valid"
+          ? "Evidence and consistency checks completed."
+          : "Complaint marked invalid after administrative evidence review.",
+      );
+      showToast(decision === "Valid" ? "Complaint confirmed as valid" : "Complaint marked as invalid");
+      navigate("edit-complaint");
+    } catch (saveError) {
+      setError(saveError.message || "The review could not be saved.");
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <Shell screen="admin-dashboard" navigate={navigate}><div className="validity-review-page">
@@ -861,8 +886,17 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
           <p>{complaint.reporterVerified ? "Verified" : "Unverified"} citizen</p><Badge tone={complaint.reporterTrustScore >= 70 ? "green" : "gold"}>{complaint.reporterTrustScore >= 70 ? "GOOD STANDING" : "REVIEW REQUIRED"}</Badge></div>
           <div className="trust-facts"><span><small>Trust score</small><strong>{complaint.reporterTrustScore}</strong></span><span><small>Member since</small><strong>{complaint.reporterJoined}</strong></span></div></Panel>
         <Panel className="fairness-card"><span><ShieldCheck size={21} /></span><div><strong>Fairness check</strong><p>Base the decision only on complaint evidence and consistency. Trust score is supporting information.</p></div></Panel>
-        <Panel title="Review decision"><Button className="button--full" icon={CheckCircle2} disabled={saving} onClick={confirmValid}>{saving ? "Saving review…" : "Confirm as valid"}</Button>
-          <Button variant="danger-soft" className="button--full" icon={ShieldAlert} disabled={saving} onClick={() => navigate("point-degradation")}>Apply point penalty</Button></Panel>
+        <Panel title="Review decision">
+          <Button className="button--full" icon={CheckCircle2} disabled={saving} onClick={() => saveDecision("Valid")}>
+            {saving ? "Saving review…" : "Confirm as valid"}
+          </Button>
+          <Button variant="danger-soft" className="button--full" icon={UserX} disabled={saving} onClick={() => saveDecision("Invalid")}>
+            Invalid complaint
+          </Button>
+          <Button variant="danger-soft" className="button--full" icon={ShieldAlert} disabled={saving} onClick={() => navigate("point-degradation")}>
+            Apply point penalty
+          </Button>
+        </Panel>
       </div></div>
     </div></Shell>
   );
