@@ -213,7 +213,7 @@ export function CitizenDashboard({ navigate, complaints, dataLoading }) {
 
         <Panel title="Neighbourhood impact" className="impact-panel">
           <div className="impact-score">
-            <TrustRing value={resolutionRate} label="resolved" />
+            <TrustRing value={resolutionRate} suffix="%" label="resolved" />
             <div>
               <Badge tone="green">{recentResolved} RESOLVED IN 7 DAYS</Badge>
               <h3>Your reports matter</h3>
