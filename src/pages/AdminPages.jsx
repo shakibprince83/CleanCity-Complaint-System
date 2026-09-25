@@ -521,6 +521,7 @@ export function UserManagement({
 }) {
   const [query, setQuery] = React.useState("");
   const [deletingId, setDeletingId] = React.useState("");
+  const [pendingDelete, setPendingDelete] = React.useState(null);
   const [deleteError, setDeleteError] = React.useState("");
   const [type, setType] = React.useState("All user types");
   const [status, setStatus] = React.useState("All statuses");
@@ -535,16 +536,14 @@ export function UserManagement({
   const verifiedCount = users.filter((item) => item.verified).length;
   const adminCount = users.filter((item) => item.role === "admin").length;
 
-  const handleDelete = async (item) => {
-    const confirmed = window.confirm(
-      `Delete ${item.name}'s account permanently? This will remove the authentication account, profile and all related complaints. This action cannot be undone.`,
-    );
-    if (!confirmed) return;
-    setDeletingId(item.id);
+  const handleDelete = async () => {
+    if (!pendingDelete) return;
+    setDeletingId(pendingDelete.id);
     setDeleteError("");
     try {
-      await deleteUser(item.id);
-      showToast(`${item.name}'s account was deleted`);
+      await deleteUser(pendingDelete.id);
+      showToast(`${pendingDelete.name}'s account was deleted`);
+      setPendingDelete(null);
     } catch (removeError) {
       setDeleteError(removeError.message || "The account could not be deleted.");
     } finally {
@@ -569,6 +568,53 @@ export function UserManagement({
         <article><BadgeCheck size={20} /><span><strong>{verifiedCount}</strong><small>NID verified</small></span></article>
         <article><Briefcase size={20} /><span><strong>{adminCount}</strong><small>Administrators</small></span></article>
       </div>
+      {pendingDelete && (
+        <div
+          className="delete-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deletingId) {
+              setPendingDelete(null);
+            }
+          }}
+        >
+          <section
+            className="delete-modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+            aria-describedby="delete-modal-description"
+          >
+            <span className="delete-modal__icon"><Trash2 size={24} /></span>
+            <div className="delete-modal__copy">
+              <small>DELETE ACCOUNT</small>
+              <h2 id="delete-modal-title">Delete {pendingDelete.name}?</h2>
+              <p id="delete-modal-description">
+                This permanently removes the authentication account, profile,
+                complaints and related data. This action cannot be undone.
+              </p>
+            </div>
+            <div className="delete-modal__actions">
+              <Button
+                variant="outline"
+                onClick={() => setPendingDelete(null)}
+                disabled={Boolean(deletingId)}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                className="delete-modal__confirm"
+                onClick={handleDelete}
+                disabled={Boolean(deletingId)}
+              >
+                <Trash2 size={17} />
+                {deletingId ? "Deleting…" : "Delete account"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       <Panel className="table-panel">
         <div className="toolbar toolbar--admin">
           <SearchBox value={query} onChange={setQuery} placeholder="Search users" />
@@ -627,7 +673,7 @@ export function UserManagement({
                       aria-label={`Delete ${item.name}`}
                       title={item.role === "admin" ? "Administrator accounts cannot be deleted here" : `Delete ${item.name}`}
                       disabled={item.role === "admin" || deletingId === item.id}
-                      onClick={() => handleDelete(item)}
+                      onClick={() => setPendingDelete(item)}
                     >
                       <Trash2 size={17} />
                     </button>
