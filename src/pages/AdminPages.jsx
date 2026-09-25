@@ -262,6 +262,7 @@ export function ManageComplaints({
                 <th>Submitted</th>
                 <th>Priority</th>
                 <th>Status</th>
+                <th>Validity</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -295,6 +296,19 @@ export function ManageComplaints({
                     <StatusBadge status={item.status} />
                   </td>
                   <td>
+                    <Badge
+                      tone={
+                        item.validity === "Valid"
+                          ? "green"
+                          : item.validity === "Invalid"
+                            ? "red"
+                            : "gold"
+                      }
+                    >
+                      {item.validity}
+                    </Badge>
+                  </td>
+                  <td>
                     <div className="table-actions">
                       <Button
                         variant="small"
@@ -310,10 +324,10 @@ export function ManageComplaints({
                 </tr>
               ))}
               {loading && (
-                <tr><td colSpan="6">Loading live complaint records…</td></tr>
+                <tr><td colSpan="7">Loading live complaint records…</td></tr>
               )}
               {!loading && !filtered.length && (
-                <tr><td colSpan="6">No complaints match the selected filters.</td></tr>
+                <tr><td colSpan="7">No complaints match the selected filters.</td></tr>
               )}
             </tbody>
           </table>

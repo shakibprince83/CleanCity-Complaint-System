@@ -11,8 +11,9 @@ const formatDate = (value) => value
     }).format(new Date(value))
   : "—";
 
-const mapComplaint = (row, profiles) => {
+const mapComplaint = (row, profiles, reviewDecisions) => {
   const reporter = profiles.get(row.citizen_id);
+  const validity = reviewDecisions.get(row.id) || "Not reviewed";
   return {
     id: row.reference,
     databaseId: row.id,
@@ -35,6 +36,7 @@ const mapComplaint = (row, profiles) => {
     reporterTrustScore: Number(reporter?.trust_score ?? 0),
     reporterJoined: formatDate(reporter?.created_at),
     imagePath: row.image_path || "",
+    validity,
   };
 };
 
@@ -73,19 +75,33 @@ export function useAdminData() {
     }
     setLoading(true);
     setError("");
-    const [complaintResult, profileResult] = await Promise.all([
+    const [complaintResult, profileResult, reviewResult] = await Promise.all([
       supabase.from("complaints").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("complaint_reviews")
+        .select("complaint_id, decision, created_at")
+        .order("created_at", { ascending: false }),
     ]);
     setLoading(false);
-    const queryError = complaintResult.error || profileResult.error;
+    const queryError = complaintResult.error || profileResult.error || reviewResult.error;
     if (queryError) {
       setError(queryError.message || "Administrator data could not be loaded.");
       return;
     }
     const profileMap = new Map((profileResult.data || []).map((item) => [item.id, item]));
+    const reviewDecisions = new Map();
+    (reviewResult.data || []).forEach((review) => {
+      if (!reviewDecisions.has(review.complaint_id)) {
+        reviewDecisions.set(review.complaint_id, review.decision);
+      }
+    });
     setUsers((profileResult.data || []).map(mapUser));
-    setComplaints((complaintResult.data || []).map((item) => mapComplaint(item, profileMap)));
+    setComplaints(
+      (complaintResult.data || []).map((item) =>
+        mapComplaint(item, profileMap, reviewDecisions),
+      ),
+    );
   }, [isAdmin, user?.id]);
 
   React.useEffect(() => {
