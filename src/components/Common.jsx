@@ -30,6 +30,7 @@ import {
 import { adminSidebar, citizenSidebar } from "../data";
 import { useAuth } from "../context/AuthContext";
 import { useCitizenData } from "../context/CitizenDataContext";
+import { supabase } from "../lib/supabase";
 
 const iconMap = {
   "citizen-dashboard": LayoutDashboard,
@@ -219,11 +220,45 @@ export function Panel({ children, className = "", title, action }) {
 
 function SideNav({ type, active, navigate, open, close, onSignOut }) {
   const items = type === "admin" ? adminSidebar : citizenSidebar;
-  const { complaints, notifications } = useCitizenData();
+  const { complaints: citizenComplaints, notifications } = useCitizenData();
+  const [adminComplaints, setAdminComplaints] = React.useState([]);
   const unreadCount = notifications.filter((item) => item.unread).length;
-  const resolvedCount = complaints.filter((item) => item.status === "Resolved").length;
-  const resolutionRate = complaints.length
-    ? Math.round((resolvedCount / complaints.length) * 100)
+
+  React.useEffect(() => {
+    let activeRequest = true;
+
+    const loadAdminImpact = async () => {
+      if (type !== "admin" || !supabase) {
+        if (activeRequest) setAdminComplaints([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("complaints")
+        .select("id, status");
+
+      if (!activeRequest) return;
+      if (error) {
+        console.error("Unable to load cleaner-city impact", error);
+        setAdminComplaints([]);
+        return;
+      }
+      setAdminComplaints(data || []);
+    };
+
+    loadAdminImpact();
+    return () => {
+      activeRequest = false;
+    };
+  }, [type, active]);
+
+  const impactComplaints =
+    type === "admin" ? adminComplaints : citizenComplaints;
+  const resolvedCount = impactComplaints.filter(
+    (item) => item.status === "Resolved",
+  ).length;
+  const resolutionRate = impactComplaints.length
+    ? Math.round((resolvedCount / impactComplaints.length) * 100)
     : 0;
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
