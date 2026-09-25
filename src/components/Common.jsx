@@ -375,13 +375,39 @@ export function AppShell({
         await markAdminNotificationRead(notification.id);
       }
       setNotificationsOpen(false);
-      if (notification.entityType === "complaint") {
-        navigate("manage-complaints");
-      } else if (notification.entityType === "profile") {
-        navigate("user-management");
+
+      if (notification.entityType === "complaint" && notification.entityId) {
+        const complaintDestination =
+          notification.actionType === "complaint_reviewed"
+            ? "validity-review"
+            : notification.actionType === "trust_penalty_applied"
+              ? "point-degradation"
+              : notification.actionType === "authority_report_created" ||
+                  notification.actionType === "authority_report_updated"
+                ? "report-authority"
+                : "edit-complaint";
+
+        navigate(complaintDestination, {
+          adminComplaintId: notification.entityId,
+        });
+        return;
       }
+
+      if (notification.entityType === "profile") {
+        if (
+          notification.actionType !== "account_deleted" &&
+          notification.entityId
+        ) {
+          navigate("edit-user", { userId: notification.entityId });
+        } else {
+          navigate("user-management");
+        }
+        return;
+      }
+
+      navigate("admin-dashboard");
     } catch (notificationError) {
-      console.error("Unable to mark notification as read", notificationError);
+      console.error("Unable to open administrator notification", notificationError);
     }
   };
 
