@@ -1008,8 +1008,8 @@ export function PointDegradation({ navigate, showToast, complaint, applyPointPen
   const [confirmed, setConfirmed] = React.useState(false); const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
   const deduction = 10; const currentPoints = Number(complaint.reporterTrustScore || 0); const newPoints = Math.max(0, currentPoints - deduction);
   const applyPenalty = async () => { setSaving(true); setError("");
-    try { await applyPointPenalty(complaint.databaseId, deduction, "Evidence did not match the submitted complaint information.");
-      showToast("Point deduction applied and citizen notified"); navigate("manage-complaints");
+    try { const updatedScore = await applyPointPenalty(complaint.databaseId, "Evidence did not match the submitted complaint information.");
+      showToast(`10 points deducted. The citizen’s trust score is now ${updatedScore}.`); navigate("manage-complaints");
     } catch (saveError) { setError(saveError.message || "The point penalty could not be applied."); }
     finally { setSaving(false); }
   };
