@@ -389,14 +389,16 @@ export function EditComplaint({
               <div>
                 <Badge tone="green">{complaint.category}</Badge>
                 <h3>{complaint.title}</h3>
-                <p>{complaint.description}</p>
               </div>
             </div>
-            <div className="info-grid info-grid--four">
+            <div className="citizen-description">
+              <small>Citizen description</small>
+              <p>{complaint.description?.trim() || "No description was provided by the citizen."}</p>
+            </div>
+            <div className="info-grid info-grid--three">
               <Info label="Reporter" value={complaint.reporterName} />
               <Info label="Submitted" value={complaint.date} />
               <Info label="Location" value={complaint.location} />
-              <Info label="Verification" value={complaint.reporterVerified ? "Verified" : "Pending"} />
             </div>
           </Panel>
           <Panel title="Administrative notes">
