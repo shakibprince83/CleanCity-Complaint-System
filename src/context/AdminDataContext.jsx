@@ -177,16 +177,15 @@ export function useAdminData() {
     await refresh();
   }, [isAdmin, refresh]);
 
-  const applyPointPenalty = React.useCallback(async (complaintId, deduction, reason) => {
+  const applyPointPenalty = React.useCallback(async (complaintId, reason) => {
     if (!supabase || !isAdmin) throw new Error("Administrator access required.");
     const { data, error: penaltyError } = await supabase.rpc("admin_apply_trust_penalty", {
       target_complaint_id: complaintId,
-      deduction,
       penalty_reason: reason,
     });
     if (penaltyError) throw penaltyError;
     await refresh();
-    return data;
+    return Number(data);
   }, [isAdmin, refresh]);
 
   return {
