@@ -512,16 +512,19 @@ export function EditComplaint({
 export function UserManagement({
   navigate,
   users,
+  complaints,
   loading,
   error,
   refresh,
   selectUser,
+  onOpenComplaint,
   deleteUser,
   showToast,
 }) {
   const [query, setQuery] = React.useState("");
   const [deletingId, setDeletingId] = React.useState("");
   const [pendingDelete, setPendingDelete] = React.useState(null);
+  const [complaintOwner, setComplaintOwner] = React.useState(null);
   const [deleteError, setDeleteError] = React.useState("");
   const [type, setType] = React.useState("All user types");
   const [status, setStatus] = React.useState("All statuses");
@@ -535,6 +538,16 @@ export function UserManagement({
   const activeCount = users.filter((item) => item.status === "Active").length;
   const verifiedCount = users.filter((item) => item.verified).length;
   const adminCount = users.filter((item) => item.role === "admin").length;
+  const ownerComplaints = complaintOwner
+    ? complaints.filter((item) => item.citizenId === complaintOwner.id)
+    : [];
+  const complaintCount = React.useMemo(() => {
+    const totals = new Map();
+    complaints.forEach((item) => {
+      totals.set(item.citizenId, (totals.get(item.citizenId) || 0) + 1);
+    });
+    return totals;
+  }, [complaints]);
 
   const handleDelete = async () => {
     if (!pendingDelete) return;
@@ -615,6 +628,66 @@ export function UserManagement({
           </section>
         </div>
       )}
+      {complaintOwner && (
+        <div
+          className="complaint-list-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setComplaintOwner(null);
+          }}
+        >
+          <section
+            className="complaint-list-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="complaint-list-title"
+          >
+            <div className="complaint-list-modal__header">
+              <span>
+                <small>CITIZEN COMPLAINTS</small>
+                <h2 id="complaint-list-title">{complaintOwner.name}</h2>
+                <p>{ownerComplaints.length} submitted complaint{ownerComplaints.length === 1 ? "" : "s"}</p>
+              </span>
+              <button
+                type="button"
+                className="complaint-list-modal__close"
+                onClick={() => setComplaintOwner(null)}
+                aria-label="Close complaint list"
+              >
+                ×
+              </button>
+            </div>
+            <div className="complaint-list-modal__body">
+              {ownerComplaints.length ? ownerComplaints.map((complaint) => (
+                <button
+                  type="button"
+                  className="complaint-list-item"
+                  key={complaint.databaseId}
+                  onClick={() => {
+                    setComplaintOwner(null);
+                    onOpenComplaint?.(complaint);
+                  }}
+                >
+                  <span className="complaint-list-item__icon">
+                    <FileText size={19} />
+                  </span>
+                  <span>
+                    <strong>{complaint.title}</strong>
+                    <small>{complaint.id} · {complaint.category} · {complaint.date}</small>
+                  </span>
+                  <StatusBadge status={complaint.status} />
+                  <ChevronRight size={18} />
+                </button>
+              )) : (
+                <EmptyState
+                  title="No complaints yet"
+                  description="This citizen has not submitted any complaints."
+                />
+              )}
+            </div>
+          </section>
+        </div>
+      )}
       <Panel className="table-panel">
         <div className="toolbar toolbar--admin">
           <SearchBox value={query} onChange={setQuery} placeholder="Search users" />
@@ -640,7 +713,7 @@ export function UserManagement({
         <div className="data-table-wrap">
           <table className="data-table">
             <thead>
-              <tr><th>User</th><th>Email or phone</th><th>Type</th><th>Joined</th><th>Trust score</th><th>Status</th><th>Action</th><th>Delete</th></tr>
+              <tr><th>User</th><th>Email or phone</th><th>Type</th><th>Joined</th><th>Complaints</th><th>Trust score</th><th>Status</th><th>Action</th><th>Delete</th></tr>
             </thead>
             <tbody>
               {!loading && filtered.map((item) => (
@@ -657,6 +730,17 @@ export function UserManagement({
                   <td>{item.contact}</td>
                   <td><Badge tone={item.type === "Citizen" ? "blue" : "violet"}>{item.type}</Badge></td>
                   <td>{item.joined}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="complaint-count-button"
+                      onClick={() => setComplaintOwner(item)}
+                      disabled={!complaintCount.get(item.id)}
+                      aria-label={`View ${complaintCount.get(item.id) || 0} complaints from ${item.name}`}
+                    >
+                      {complaintCount.get(item.id) || 0}
+                    </button>
+                  </td>
                   <td>
                     <strong className="trust-score-value">
                       {item.role === "admin" ? "—" : item.trustScore}
@@ -680,8 +764,8 @@ export function UserManagement({
                   </td>
                 </tr>
               ))}
-              {loading && <tr><td colSpan="8">Loading registered users…</td></tr>}
-              {!loading && !filtered.length && <tr><td colSpan="8">No users match the selected filters.</td></tr>}
+              {loading && <tr><td colSpan="9">Loading registered users…</td></tr>}
+              {!loading && !filtered.length && <tr><td colSpan="9">No users match the selected filters.</td></tr>}
             </tbody>
           </table>
         </div>
