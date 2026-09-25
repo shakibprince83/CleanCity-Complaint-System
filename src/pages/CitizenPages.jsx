@@ -51,7 +51,6 @@ import {
   SearchBox,
   StatCard,
   StatusBadge,
-  Tick,
   TrustRing,
 } from "../components/Common";
 import LeafletMap from "../components/LeafletMap";
@@ -1373,32 +1372,6 @@ export function NotificationsPage({
               </span>
             </button>
           ))}
-        </Panel>
-        <Panel className="notification-summary">
-          <div className="notification-orbit">
-            <Bell size={30} />
-            <i />
-            <i />
-          </div>
-          <h2>Stay informed</h2>
-          <p>
-            CleanCity sends updates when a complaint is reviewed, assigned or
-            resolved.
-          </p>
-          <div className="notification-types">
-            <span>
-              <Tick />
-              Status changes
-            </span>
-            <span>
-              <Tick />
-              Review decisions
-            </span>
-            <span>
-              <Tick />
-              Service messages
-            </span>
-          </div>
         </Panel>
       </div>
     </Shell>
