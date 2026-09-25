@@ -2688,6 +2688,11 @@ html[data-theme="light"] .penalty-footnote {
   color: #ffb8bc;
   background: rgba(255, 127, 133, 0.1);
 }
+.form-message--success {
+  border-color: rgba(92, 222, 152, 0.42);
+  color: #a9f5ca;
+  background: rgba(92, 222, 152, 0.1);
+}
 
 /* PAGE — Citizen Profile: editable Supabase-backed profile fields and actions. */
 .profile-edit-grid {
@@ -2706,6 +2711,10 @@ html[data-theme="light"] .penalty-footnote {
 html[data-theme="light"] .form-message--error {
   color: #982f3b;
   background: #fff0f1;
+}
+html[data-theme="light"] .form-message--success {
+  color: #116b3e;
+  background: #edfff5;
 }
 html[data-theme="light"] .gps-ready-text {
   color: #116b3e;
