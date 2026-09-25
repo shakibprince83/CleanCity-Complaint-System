@@ -358,7 +358,8 @@ export default function App() {
 
   return (
     <>
-      {authLoading || (user && profileLoading) ? (
+      {authLoading ||
+      (user && profileLoading && screen !== "login" && screen !== "register") ? (
         <main className="auth-loading" role="status" aria-live="polite">
           <span className="auth-spinner" />
           <strong>Restoring your secure session…</strong>
