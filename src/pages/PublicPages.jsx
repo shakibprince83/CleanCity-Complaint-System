@@ -37,7 +37,7 @@ import { uiScreens } from "../data";
 function readableAuthError(error) {
   const message = error?.message || "Something went wrong. Please try again.";
   if (message.toLowerCase().includes("invalid login credentials")) {
-    return "The email address or password is incorrect.";
+    return "Invalid email or password.";
   }
   if (message.toLowerCase().includes("user already registered")) {
     return "An account already exists with this email address.";
