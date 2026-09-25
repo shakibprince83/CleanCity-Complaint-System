@@ -93,14 +93,14 @@ begin
     complaint_id,
     title,
     message,
-    is_read
+    tone
   )
   values (
     target_citizen_id,
     target_complaint_id,
     'Trust score updated',
     'An administrator applied a 10-point deduction after reviewing this complaint.',
-    false
+    'red'
   );
 
   return new_score;
