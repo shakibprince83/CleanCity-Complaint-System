@@ -198,9 +198,7 @@ export function RegistrationPage({ navigate, showToast }) {
   const setField = (field) => (event) => {
     const value = field === "nid"
       ? event.target.value.replace(/\D/g, "").slice(0, 13)
-      : field === "email"
-        ? event.target.value.toLowerCase()
-        : event.target.value;
+      : event.target.value;
     setForm((current) => ({ ...current, [field]: value }));
     if (field === "nid") setVerified(false);
   };
@@ -517,7 +515,7 @@ export function LoginPage({ navigate, showToast }) {
               type="email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value.toLowerCase())}
+              onChange={(event) => setEmail(event.target.value)}
               inputMode="email"
               autoCapitalize="none"
               autoCorrect="off"
