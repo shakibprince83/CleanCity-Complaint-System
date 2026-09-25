@@ -29,7 +29,6 @@ import {
   PointDegradation,
   ReportAuthority,
   UserManagement,
-  VerificationReview,
   ValidityReview,
 } from "./pages/AdminPages";
 
@@ -53,7 +52,6 @@ const knownScreens = new Set([
   "admin-profile",
   "user-management",
   "edit-user",
-  "verification-review",
   "report-authority",
   "validity-review",
   "point-degradation",
@@ -67,7 +65,6 @@ const protectedAdminScreens = new Set([
   "admin-profile",
   "user-management",
   "edit-user",
-  "verification-review",
   "report-authority",
   "validity-review",
   "point-degradation",
@@ -346,11 +343,6 @@ export default function App() {
         error={adminDataError}
         refresh={refreshAdminData}
       />
-    ),
-    "verification-review": activeUser ? (
-      <VerificationReview {...shared} user={activeUser} updateUser={updateUser} />
-    ) : (
-      <UserManagement {...shared} users={adminUsers} />
     ),
     "report-authority": (
       activeAdminComplaint ? (

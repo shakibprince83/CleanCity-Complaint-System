@@ -787,47 +787,6 @@ export function AdminProfile({ navigate, showToast }) {
   );
 }
 
-export function VerificationReview({ navigate, user, showToast, updateUser }) {
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState("");
-  const saveVerification = async (verified) => {
-    setSaving(true); setError("");
-    try {
-      await updateUser(user.id, { role: user.role, accountStatus: user.accountStatus, verified });
-      showToast(verified ? "Identity verification confirmed" : "Verification sent back for review");
-      navigate(verified ? "edit-user" : "user-management");
-    } catch (saveError) { setError(saveError.message || "Verification could not be updated."); }
-    finally { setSaving(false); }
-  };
-  const checks = [
-    ["Name available", "A citizen name is stored on the profile.", Boolean(user.name)],
-    ["NID recorded", "The protected NID value is present.", Boolean(user.nidLast4)],
-    ["Contact available", "An email address or phone number is stored.", Boolean(user.email || user.phone)],
-  ];
-  return (
-    <Shell screen="user-management" navigate={navigate}>
-      <PageHeading eyebrow={`IDENTITY REVIEW · ${user.id.slice(0, 8).toUpperCase()}`} title="Review identity verification"
-        description="Review the citizen's stored identity information and update the verification result."
-        actions={<Button variant="outline" onClick={() => navigate("edit-user")}>Back to user</Button>} />
-      {error && <div className="page-error" role="alert">{error}</div>}
-      <div className="verification-review-layout">
-        <Panel title="Submitted identity"><div className="verification-document"><ShieldCheck size={46} />
-          <span><strong>National ID record</strong><small>Only the protected final four digits are available.</small></span></div>
-          <div className="info-grid"><Info label="Citizen name" value={user.name} />
-            <Info label="NID number" value={user.nidLast4 ? `•••• •••• ${user.nidLast4}` : "Not provided"} />
-            <Info label="Member since" value={user.joined} /><Info label="Current result" value={user.verified ? "Verified" : "Pending review"} /></div></Panel>
-        <Panel title="Verification checks"><div className="checklist">
-          {checks.map(([title, text, passed]) => <article key={title}><Tick checked={passed} />
-            <span><strong>{title}</strong><small>{text}</small></span><Badge tone={passed ? "green" : "gold"}>{passed ? "PASSED" : "REVIEW"}</Badge></article>)}
-        </div><div className="verification-review-actions">
-          <Button variant="outline" disabled={saving} onClick={() => saveVerification(false)}>Request recheck</Button>
-          <Button icon={CheckCircle2} disabled={saving || !user.nidLast4} onClick={() => saveVerification(true)}>{saving ? "Saving…" : "Confirm verification"}</Button>
-        </div></Panel>
-      </div>
-    </Shell>
-  );
-}
-
 export function ReportAuthority({ navigate, complaint, showToast, saveAuthorityReport }) {
   const deadline = new Date(); deadline.setDate(deadline.getDate() + 7);
   const [form, setForm] = React.useState({ authority: "Dhaka North City Corporation", subject: `Response requested for ${complaint.id}`,

@@ -62,11 +62,6 @@ export const uiScreens = [
       ["edit-complaint", "Edit Complaint", "Assignment, status and priority"],
       ["user-management", "User Management", "Registered user controls"],
       ["edit-user", "Edit User", "Account and verification settings"],
-      [
-        "verification-review",
-        "Verification Review",
-        "Review citizen identity information",
-      ],
       ["report-authority", "Report to Authority", "Formal authority reporting"],
       ["validity-review", "Validity Review", "Evidence and trust-score review"],
       [
