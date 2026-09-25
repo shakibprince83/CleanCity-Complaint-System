@@ -653,11 +653,15 @@ export function Tick({ checked = true }) {
   );
 }
 
-export function TrustRing({ value = 86, label = "Trust score" }) {
+export function TrustRing({
+  value = 86,
+  label = "Trust score",
+  suffix = "",
+}) {
   return (
     <div className="trust-ring" style={{ "--value": `${value * 3.6}deg` }}>
       <div>
-        <strong>{value}</strong>
+        <strong>{value}{suffix}</strong>
         <small>{label}</small>
       </div>
     </div>
