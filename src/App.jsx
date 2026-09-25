@@ -15,7 +15,6 @@ import {
   ComplaintDetails,
   LocationSelection,
   MyComplaints,
-  NotificationsPage,
   ProfilePage,
   SubmissionConfirmation,
   SubmitComplaint,
@@ -45,7 +44,6 @@ const knownScreens = new Set([
   "my-complaints",
   "complaint-details",
   "profile",
-  "notifications",
   "admin-dashboard",
   "manage-complaints",
   "edit-complaint",
@@ -78,7 +76,6 @@ const protectedCitizenScreens = new Set([
   "my-complaints",
   "complaint-details",
   "profile",
-  "notifications",
 ]);
 
 function screenFromHash() {
@@ -95,11 +92,8 @@ export default function App() {
   } = useAuth();
   const {
     complaints: citizenComplaints,
-    notifications,
     loading: citizenDataLoading,
     addComplaint,
-    markNotificationRead,
-    markAllRead,
   } = useCitizenData();
   const {
     complaints: adminComplaints,
@@ -163,6 +157,9 @@ export default function App() {
       // Notification deep links can select their exact record before routing.
       if (options.adminComplaintId) {
         setSelectedAdminComplaintId(options.adminComplaintId);
+      }
+      if (options.citizenComplaintId) {
+        setSelectedComplaintId(options.citizenComplaintId);
       }
       if (options.userId) {
         setSelectedUserId(options.userId);
@@ -260,33 +257,6 @@ export default function App() {
       <ComplaintDetails {...shared} complaint={activeComplaint} />
     ),
     profile: <ProfilePage {...shared} complaints={citizenComplaints} />,
-    notifications: (
-      <NotificationsPage
-        {...shared}
-        notifications={notifications}
-        openNotification={async (notification) => {
-          try {
-            if (notification.unread) {
-              await markNotificationRead(notification.id);
-            }
-            if (notification.complaintId) {
-              setSelectedComplaintId(notification.complaintId);
-              navigate("complaint-details");
-            } else {
-              showToast("Notification marked as read");
-            }
-          } catch (notificationError) {
-            showToast(
-              notificationError.message || "The notification could not be opened.",
-            );
-          }
-        }}
-        markAllRead={async () => {
-          await markAllRead();
-          showToast("All notifications marked as read");
-        }}
-      />
-    ),
     "admin-dashboard": (
       <AdminDashboard
         {...shared}
