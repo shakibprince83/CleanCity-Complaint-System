@@ -198,7 +198,9 @@ export function RegistrationPage({ navigate, showToast }) {
   const setField = (field) => (event) => {
     const value = field === "nid"
       ? event.target.value.replace(/\D/g, "").slice(0, 13)
-      : event.target.value;
+      : field === "email"
+        ? event.target.value.toLowerCase()
+        : event.target.value;
     setForm((current) => ({ ...current, [field]: value }));
     if (field === "nid") setVerified(false);
   };
@@ -306,6 +308,10 @@ export function RegistrationPage({ navigate, showToast }) {
               required
               value={form.email}
               onChange={setField("email")}
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               autoComplete="email"
             />
           </div>
@@ -511,7 +517,11 @@ export function LoginPage({ navigate, showToast }) {
               type="email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => setEmail(event.target.value.toLowerCase())}
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               autoComplete="email"
             />
           </div>
