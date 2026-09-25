@@ -30,6 +30,7 @@ import {
 import { adminSidebar, citizenSidebar } from "../data";
 import { useAuth } from "../context/AuthContext";
 import { useCitizenData } from "../context/CitizenDataContext";
+import { useAdminNotifications } from "../context/AdminNotificationContext";
 import { supabase } from "../lib/supabase";
 
 const iconMap = {
@@ -332,6 +333,16 @@ export function AppShell({
 }) {
   const { user, profile, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
+  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const notificationRef = React.useRef(null);
+  const {
+    notifications: adminNotifications,
+    unreadCount: adminUnreadCount,
+    loading: adminNotificationsLoading,
+    error: adminNotificationsError,
+    markRead: markAdminNotificationRead,
+    markAllRead: markAllAdminNotificationsRead,
+  } = useAdminNotifications(type === "admin");
   const citizenName = profile?.full_name || user?.email || "Citizen";
   const adminName = profile?.full_name || user?.email || "Administrator";
   const activeName = type === "admin" ? adminName : citizenName;
@@ -341,6 +352,38 @@ export function AppShell({
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+  React.useEffect(() => {
+    if (!notificationsOpen) return undefined;
+
+    const closeNotifications = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeNotifications);
+    return () => document.removeEventListener("mousedown", closeNotifications);
+  }, [notificationsOpen]);
+
+  const openAdminNotification = async (notification) => {
+    try {
+      if (!notification.read) {
+        await markAdminNotificationRead(notification.id);
+      }
+      setNotificationsOpen(false);
+      if (notification.entityType === "complaint") {
+        navigate("manage-complaints");
+      } else if (notification.entityType === "profile") {
+        navigate("user-management");
+      }
+    } catch (notificationError) {
+      console.error("Unable to mark notification as read", notificationError);
+    }
+  };
 
   const handleSignOut = async () => {
     if (type === "citizen" && user) {
@@ -388,13 +431,90 @@ export function AppShell({
             }
           />
           <div className="topbar__actions">
-            <IconButton
-              icon={Bell}
-              label="Notifications"
-              onClick={() =>
-                navigate(type === "admin" ? "admin-dashboard" : "notifications")
-              }
-            />
+            {type === "admin" ? (
+              <div className="admin-notification-menu" ref={notificationRef}>
+                <IconButton
+                  icon={Bell}
+                  label="Administrator notifications"
+                  className={adminUnreadCount ? "icon-button--unread" : ""}
+                  aria-expanded={notificationsOpen}
+                  onClick={() => setNotificationsOpen((current) => !current)}
+                />
+                {adminUnreadCount > 0 && (
+                  <span className="admin-notification-count">
+                    {adminUnreadCount > 99 ? "99+" : adminUnreadCount}
+                  </span>
+                )}
+                {notificationsOpen && (
+                  <section
+                    className="admin-notification-popover"
+                    aria-label="Administrator notifications"
+                  >
+                    <header>
+                      <span>
+                        <strong>Notifications</strong>
+                        <small>{adminUnreadCount} unread</small>
+                      </span>
+                      {adminUnreadCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => markAllAdminNotificationsRead()}
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </header>
+                    <div className="admin-notification-list">
+                      {adminNotificationsLoading ? (
+                        <p className="admin-notification-state">
+                          Loading notifications…
+                        </p>
+                      ) : adminNotificationsError ? (
+                        <p className="admin-notification-state admin-notification-state--error">
+                          {adminNotificationsError}
+                        </p>
+                      ) : adminNotifications.length ? (
+                        adminNotifications.map((notification) => (
+                          <button
+                            type="button"
+                            key={notification.id}
+                            className={`admin-notification-item ${notification.read ? "admin-notification-item--read" : ""}`}
+                            onClick={() => openAdminNotification(notification)}
+                          >
+                            <span
+                              className={`admin-notification-item__dot admin-notification-item__dot--${notification.tone}`}
+                            />
+                            <span>
+                              <strong>{notification.title}</strong>
+                              <small>{notification.message}</small>
+                              <time>
+                                {new Intl.DateTimeFormat("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }).format(new Date(notification.createdAt))}
+                              </time>
+                            </span>
+                            <ChevronRight size={16} />
+                          </button>
+                        ))
+                      ) : (
+                        <p className="admin-notification-state">
+                          No administrator activity yet.
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
+            ) : (
+              <IconButton
+                icon={Bell}
+                label="Notifications"
+                onClick={() => navigate("notifications")}
+              />
+            )}
             <button
               className="profile-chip"
               onClick={() =>
