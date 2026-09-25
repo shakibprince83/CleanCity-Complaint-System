@@ -527,35 +527,57 @@ export function AppShell({
             />
             {type === "citizen" && searchOpen && searchQuery.trim() && (
               <section className="search-suggestions" aria-label="Complaint search suggestions">
-                {complaintSuggestions.length ? (
-                  complaintSuggestions.map((complaint) => (
-                    <button
-                      type="button"
-                      key={complaint.databaseId}
-                      onClick={() => {
-                        setSearchQuery(complaint.title);
-                        setSearchOpen(false);
-                        navigate("complaint-details", {
-                          citizenComplaintId: complaint.databaseId,
-                        });
-                      }}
-                    >
-                      <span className="search-suggestions__icon">
-                        <FileText size={17} />
-                      </span>
+                <header className="search-suggestions__header">
+                  <span>
+                    <strong>Complaint suggestions</strong>
+                    <small>Search results from your reports</small>
+                  </span>
+                  <em>{complaintSuggestions.length}/5</em>
+                </header>
+                <div className="search-suggestions__list">
+                  {complaintSuggestions.length ? (
+                    complaintSuggestions.map((complaint) => (
+                      <button
+                        type="button"
+                        key={complaint.databaseId}
+                        onClick={() => {
+                          setSearchQuery(complaint.title);
+                          setSearchOpen(false);
+                          navigate("complaint-details", {
+                            citizenComplaintId: complaint.databaseId,
+                          });
+                        }}
+                      >
+                        <span className="search-suggestions__icon">
+                          <FileText size={17} />
+                        </span>
+                        <span className="search-suggestions__content">
+                          <span className="search-suggestions__title">
+                            <strong>{complaint.title}</strong>
+                            <em>{complaint.status}</em>
+                          </span>
+                          <small>
+                            {complaint.id} · {complaint.category}
+                          </small>
+                          <small className="search-suggestions__location">
+                            <MapPin size={12} /> {complaint.location}
+                          </small>
+                        </span>
+                        <span className="search-suggestions__arrow">
+                          <ChevronRight size={16} />
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="search-suggestions__empty">
+                      <Search size={20} />
                       <span>
-                        <strong>{complaint.title}</strong>
-                        <small>
-                          {complaint.id} · {complaint.category} · {complaint.status}
-                        </small>
-                        <small>{complaint.location}</small>
+                        <strong>No complaint found</strong>
+                        <small>Try a title, complaint ID, category or location.</small>
                       </span>
-                      <ChevronRight size={16} />
-                    </button>
-                  ))
-                ) : (
-                  <p>No matching complaints found.</p>
-                )}
+                    </div>
+                  )}
+                </div>
               </section>
             )}
           </div>
