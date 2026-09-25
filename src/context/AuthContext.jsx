@@ -156,9 +156,7 @@ export function AuthProvider({ children }) {
     if (!registeredEmail || enteredEmail !== registeredEmail) {
       await supabase.auth.signOut();
       setProfile(null);
-      throw new Error(
-        "The email address must exactly match the uppercase and lowercase letters used during registration.",
-      );
+      throw new Error("Invalid login credentials");
     }
 
     return { ...data, profile: signedInProfile };
