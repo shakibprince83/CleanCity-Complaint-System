@@ -160,6 +160,14 @@ export default function App() {
 
   const navigate = React.useCallback(
     (nextScreen, options = {}) => {
+      // Notification deep links can select their exact record before routing.
+      if (options.adminComplaintId) {
+        setSelectedAdminComplaintId(options.adminComplaintId);
+      }
+      if (options.userId) {
+        setSelectedUserId(options.userId);
+      }
+
       if (
         protectedAdminScreens.has(nextScreen) &&
         (!user || !hasAdminAccess) &&
