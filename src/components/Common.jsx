@@ -487,7 +487,7 @@ export function AppShell({
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell app-shell--${type} screen-${active}`}>
       <SideNav
         type={type}
         active={active}
