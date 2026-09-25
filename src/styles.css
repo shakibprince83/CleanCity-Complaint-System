@@ -3893,3 +3893,25 @@ html[data-theme="light"] .screen-citizen-dashboard .sidebar__bottom button {
 html[data-theme="light"] .screen-citizen-dashboard .sidebar__nav button.active {
   color: #087442;
 }
+
+@media (max-width: 720px) {
+  .screen-citizen-dashboard .page-heading h1 {
+    font-size: 32px;
+  }
+  .screen-citizen-dashboard .page-heading p {
+    font-size: 13px;
+  }
+  .screen-citizen-dashboard .stat-card {
+    min-height: 145px;
+    padding: 18px;
+  }
+  .screen-citizen-dashboard .stat-card > strong {
+    font-size: 34px;
+  }
+  .screen-citizen-dashboard .panel {
+    padding: 19px;
+  }
+  .screen-citizen-dashboard .complaint-row__main strong {
+    font-size: 13px;
+  }
+}
