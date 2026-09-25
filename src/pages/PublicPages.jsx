@@ -547,7 +547,9 @@ export function LoginPage({ navigate, showToast }) {
             <input type="checkbox" defaultChecked />
             <span>Remember me</span>
           </label>
-          <button type="button">Forgot password?</button>
+          <button type="button" onClick={() => navigate("forgot-password")}>
+            Forgot password?
+          </button>
         </div>
         {(!isConfigured || error) && (
           <p className="form-message form-message--error" role="alert">
@@ -568,6 +570,178 @@ export function LoginPage({ navigate, showToast }) {
           New to CleanCity?{" "}
           <button type="button" onClick={() => navigate("register")}>
             Create account
+          </button>
+        </p>
+      </form>
+    </AuthLayout>
+  );
+}
+
+export function ForgotPasswordPage({ navigate }) {
+  const { requestPasswordReset, isConfigured } = useAuth();
+  const [email, setEmail] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [sent, setSent] = React.useState(false);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSent(false);
+    setSubmitting(true);
+    try {
+      await requestPasswordReset(email);
+      setSent(true);
+    } catch (resetError) {
+      setError(readableAuthError(resetError));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AuthLayout
+      navigate={navigate}
+      title="Reset your password"
+      description="Enter your registered email address and we will send you a secure reset link."
+      compact
+      hideBackLink
+    >
+      <form className="auth-form" onSubmit={submit}>
+        <Field label="Registered email address">
+          <div className="input-wrap">
+            <Mail size={17} />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="email"
+            />
+          </div>
+        </Field>
+        {error && (
+          <p className="form-message form-message--error" role="alert">
+            {error}
+          </p>
+        )}
+        {sent && (
+          <p className="form-message form-message--success" role="status">
+            Reset link sent. Check your email and open the latest link.
+          </p>
+        )}
+        <Button
+          className="button--full"
+          type="submit"
+          disabled={submitting || !isConfigured}
+        >
+          {submitting ? "Sending reset link…" : "Send reset link"}
+        </Button>
+        <p className="auth-switch">
+          Remembered your password?{" "}
+          <button type="button" onClick={() => navigate("login")}>
+            Return to login
+          </button>
+        </p>
+      </form>
+    </AuthLayout>
+  );
+}
+
+export function ResetPasswordPage({ navigate, showToast }) {
+  const { updateRecoveredPassword, passwordRecovery, isConfigured } = useAuth();
+  const [password, setPassword] = React.useState("");
+  const [confirm, setConfirm] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (password !== confirm) {
+      setError("The passwords do not match.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await updateRecoveredPassword(password);
+      showToast("Password changed successfully. Log in with your new password.");
+      navigate("login");
+    } catch (updateError) {
+      setError(readableAuthError(updateError));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AuthLayout
+      navigate={navigate}
+      title="Create a new password"
+      description="Choose a password that is different from your current password."
+      compact
+      hideBackLink
+    >
+      <form className="auth-form" onSubmit={submit}>
+        {!passwordRecovery && (
+          <p className="form-message form-message--error" role="alert">
+            Open the latest password reset link sent to your email before changing your password.
+          </p>
+        )}
+        <Field label="New password">
+          <div className="input-wrap">
+            <Lock size={17} />
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="new-password"
+            />
+            <button type="button" onClick={() => setShowPassword((current) => !current)}>
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
+        </Field>
+        <Field
+          label="Confirm new password"
+          hint={confirm && password === confirm ? "Passwords match" : ""}
+        >
+          <div className={`input-wrap ${confirm && password === confirm ? "input-wrap--success" : ""}`}>
+            <KeyRound size={17} />
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+              autoComplete="new-password"
+            />
+            {confirm && password === confirm && <CheckCircle2 size={17} />}
+          </div>
+        </Field>
+        {error && (
+          <p className="form-message form-message--error" role="alert">
+            {error}
+          </p>
+        )}
+        <Button
+          className="button--full"
+          type="submit"
+          disabled={submitting || !isConfigured || !passwordRecovery}
+        >
+          {submitting ? "Checking password…" : "Change password"}
+        </Button>
+        <p className="auth-switch">
+          <button type="button" onClick={() => navigate("forgot-password")}>
+            Request a new reset link
           </button>
         </p>
       </form>
