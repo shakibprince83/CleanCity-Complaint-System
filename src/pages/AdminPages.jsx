@@ -516,8 +516,12 @@ export function UserManagement({
   error,
   refresh,
   selectUser,
+  deleteUser,
+  showToast,
 }) {
   const [query, setQuery] = React.useState("");
+  const [deletingId, setDeletingId] = React.useState("");
+  const [deleteError, setDeleteError] = React.useState("");
   const [type, setType] = React.useState("All user types");
   const [status, setStatus] = React.useState("All statuses");
   const filtered = users.filter((item) => {
@@ -531,6 +535,23 @@ export function UserManagement({
   const verifiedCount = users.filter((item) => item.verified).length;
   const adminCount = users.filter((item) => item.role === "admin").length;
 
+  const handleDelete = async (item) => {
+    const confirmed = window.confirm(
+      `Delete ${item.name}'s account permanently? This will remove the authentication account, profile and all related complaints. This action cannot be undone.`,
+    );
+    if (!confirmed) return;
+    setDeletingId(item.id);
+    setDeleteError("");
+    try {
+      await deleteUser(item.id);
+      showToast(`${item.name}'s account was deleted`);
+    } catch (removeError) {
+      setDeleteError(removeError.message || "The account could not be deleted.");
+    } finally {
+      setDeletingId("");
+    }
+  };
+
   return (
     <Shell screen="user-management" navigate={navigate}>
       <PageHeading
@@ -539,7 +560,9 @@ export function UserManagement({
         description="Review registered citizens and administrators."
         actions={<Button variant="outline" icon={RefreshCw} onClick={refresh}>Refresh data</Button>}
       />
-      {error && <p className="form-message form-message--error">{error}</p>}
+      {(error || deleteError) && (
+        <p className="form-message form-message--error">{error || deleteError}</p>
+      )}
       <div className="user-stats">
         <article><Users size={20} /><span><strong>{users.length}</strong><small>Total users</small></span></article>
         <article><UserCheck size={20} /><span><strong>{activeCount}</strong><small>Active accounts</small></span></article>
@@ -571,7 +594,7 @@ export function UserManagement({
         <div className="data-table-wrap">
           <table className="data-table">
             <thead>
-              <tr><th>User</th><th>Email or phone</th><th>Type</th><th>Joined</th><th>Status</th><th>Action</th></tr>
+              <tr><th>User</th><th>Email or phone</th><th>Type</th><th>Joined</th><th>Trust score</th><th>Status</th><th>Action</th><th>Delete</th></tr>
             </thead>
             <tbody>
               {!loading && filtered.map((item) => (
@@ -588,14 +611,31 @@ export function UserManagement({
                   <td>{item.contact}</td>
                   <td><Badge tone={item.type === "Citizen" ? "blue" : "violet"}>{item.type}</Badge></td>
                   <td>{item.joined}</td>
+                  <td>
+                    <strong className="trust-score-value">
+                      {item.role === "admin" ? "—" : item.trustScore}
+                    </strong>
+                  </td>
                   <td><StatusBadge status={item.status} /></td>
                   <td>
                     <Button variant="small" onClick={() => selectUser?.(item)}>Edit</Button>
                   </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="delete-user-button"
+                      aria-label={`Delete ${item.name}`}
+                      title={item.role === "admin" ? "Administrator accounts cannot be deleted here" : `Delete ${item.name}`}
+                      disabled={item.role === "admin" || deletingId === item.id}
+                      onClick={() => handleDelete(item)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                  </td>
                 </tr>
               ))}
-              {loading && <tr><td colSpan="6">Loading registered users…</td></tr>}
-              {!loading && !filtered.length && <tr><td colSpan="6">No users match the selected filters.</td></tr>}
+              {loading && <tr><td colSpan="8">Loading registered users…</td></tr>}
+              {!loading && !filtered.length && <tr><td colSpan="8">No users match the selected filters.</td></tr>}
             </tbody>
           </table>
         </div>

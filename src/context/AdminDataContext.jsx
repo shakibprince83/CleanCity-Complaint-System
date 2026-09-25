@@ -57,6 +57,7 @@ const mapUser = (row) => ({
   nidLast4: row.nid_last4,
   preferredLanguage: row.preferred_language,
   notificationEnabled: row.notification_enabled,
+  trustScore: Number(row.trust_score ?? 0),
 });
 
 export function useAdminData() {
@@ -137,6 +138,15 @@ export function useAdminData() {
     await refresh();
   }, [isAdmin, refresh]);
 
+  const deleteUser = React.useCallback(async (userId) => {
+    if (!supabase || !isAdmin) throw new Error("Administrator access required.");
+    const { error: deleteError } = await supabase.rpc("admin_delete_user", {
+      target_user_id: userId,
+    });
+    if (deleteError) throw deleteError;
+    await refresh();
+  }, [isAdmin, refresh]);
+
   const saveAuthorityReport = React.useCallback(async (complaintId, report, reportId) => {
     if (!supabase || !isAdmin) throw new Error("Administrator access required.");
     const payload = {
@@ -188,6 +198,7 @@ export function useAdminData() {
     refresh,
     updateComplaint,
     updateUser,
+    deleteUser,
     saveAuthorityReport,
     reviewComplaint,
     applyPointPenalty,

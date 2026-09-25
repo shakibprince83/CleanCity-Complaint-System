@@ -2845,3 +2845,32 @@ html[data-theme="light"] .success-card .dashboard-return:hover {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* PAGE — User Management: live trust score and protected account deletion. */
+.trust-score-value {
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 900;
+}
+.delete-user-button {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(224, 91, 105, 0.35);
+  border-radius: 11px;
+  color: #e05b69;
+  background: rgba(224, 91, 105, 0.08);
+  cursor: pointer;
+  transition: 160ms ease;
+}
+.delete-user-button:hover:not(:disabled) {
+  color: #ffffff;
+  background: #c84655;
+  border-color: #c84655;
+}
+.delete-user-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

@@ -109,6 +109,7 @@ export default function App() {
     refresh: refreshAdminData,
     updateComplaint,
     updateUser,
+    deleteUser,
     saveAuthorityReport,
     reviewComplaint,
     applyPointPenalty,
@@ -327,6 +328,7 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
+        deleteUser={deleteUser}
         selectUser={(selectedUser) => {
           setSelectedUserId(selectedUser.id);
           navigate("edit-user");
@@ -342,6 +344,7 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
+        deleteUser={deleteUser}
       />
     ),
     "report-authority": (
