@@ -5,10 +5,12 @@ import { useAuth } from "./context/AuthContext";
 import { useCitizenData } from "./context/CitizenDataContext";
 import { useAdminData } from "./context/AdminDataContext";
 import {
+  ForgotPasswordPage,
   HomePage,
   LoginPage,
   PreviewPage,
   RegistrationPage,
+  ResetPasswordPage,
 } from "./pages/PublicPages";
 import {
   CitizenDashboard,
@@ -37,6 +39,8 @@ const knownScreens = new Set([
   "preview",
   "register",
   "login",
+  "forgot-password",
+  "reset-password",
   "citizen-dashboard",
   "submit-complaint",
   "location",
@@ -223,6 +227,8 @@ export default function App() {
     preview: <PreviewPage {...shared} />,
     register: <RegistrationPage {...shared} />,
     login: <LoginPage {...shared} />,
+    "forgot-password": <ForgotPasswordPage {...shared} />,
+    "reset-password": <ResetPasswordPage {...shared} />,
     "citizen-dashboard": (
       <CitizenDashboard
         {...shared}
@@ -359,7 +365,11 @@ export default function App() {
   return (
     <>
       {authLoading ||
-      (user && profileLoading && screen !== "login" && screen !== "register") ? (
+      (user &&
+        profileLoading &&
+        screen !== "login" &&
+        screen !== "register" &&
+        screen !== "reset-password") ? (
         <main className="auth-loading" role="status" aria-live="polite">
           <span className="auth-spinner" />
           <strong>Restoring your secure session…</strong>
