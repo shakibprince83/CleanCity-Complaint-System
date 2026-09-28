@@ -3497,3 +3497,156 @@ html[data-theme="light"] .success-card .next-step-card small {
     width: 100%;
   }
 }
+
+
+/* PAGE — Complaint Details: improved text size, contrast and visual hierarchy. */
+.evidence-card .photo-overlay .badge {
+  padding: 7px 12px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.35px;
+}
+.evidence-card .photo-overlay > span {
+  font-size: 11px;
+  font-weight: 650;
+}
+.evidence-copy {
+  padding: 31px 30px;
+}
+.evidence-copy > div:first-child {
+  gap: 10px;
+}
+.evidence-copy > div:first-child .badge {
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 850;
+}
+.evidence-copy h2 {
+  margin: 28px 0 12px;
+  font-size: 25px;
+  line-height: 1.25;
+  letter-spacing: -0.45px;
+}
+.evidence-copy > p {
+  margin: 0;
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 520;
+  line-height: 1.7;
+}
+.detail-meta {
+  gap: 12px;
+  margin-top: 30px;
+}
+.detail-meta > span {
+  min-height: 78px;
+  gap: 4px;
+  padding: 15px 16px;
+}
+.detail-meta > span > svg {
+  width: 20px;
+  height: 20px;
+}
+.detail-meta small {
+  font-size: 10px;
+  font-weight: 650;
+}
+.detail-meta strong {
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.4;
+}
+.timeline-panel .panel__header h3,
+.location-card .panel__header h3 {
+  font-size: 19px;
+}
+.timeline {
+  margin-top: 12px;
+}
+.timeline > div {
+  min-height: 76px;
+}
+.timeline > div > div > strong {
+  font-size: 13px;
+  font-weight: 850;
+}
+.timeline > div > div > small {
+  margin-top: 5px;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.timeline > div .badge {
+  margin-top: 8px;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+.location-card .address-block {
+  gap: 12px;
+  margin: 18px 0;
+}
+.location-card .address-block strong {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.location-card .address-block small {
+  margin-top: 5px;
+  font-size: 11px;
+}
+.location-card .button {
+  min-height: 47px;
+  font-size: 13px;
+}
+.status-note {
+  gap: 15px;
+  padding: 23px 25px;
+}
+.status-note > span {
+  width: 48px;
+  height: 48px;
+}
+.status-note strong {
+  font-size: 16px;
+  font-weight: 850;
+}
+.status-note p {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.details-grid + * {
+  font-size: inherit;
+}
+html[data-theme="light"] .evidence-copy > p,
+html[data-theme="light"] .detail-meta strong,
+html[data-theme="light"] .timeline strong,
+html[data-theme="light"] .location-card .address-block strong,
+html[data-theme="light"] .status-note strong {
+  color: #153c28;
+}
+html[data-theme="light"] .detail-meta small,
+html[data-theme="light"] .timeline small,
+html[data-theme="light"] .location-card .address-block small,
+html[data-theme="light"] .status-note p,
+html[data-theme="light"] .photo-overlay > span {
+  color: #4e6d5d;
+}
+
+@media (max-width: 760px) {
+  .evidence-copy {
+    padding: 24px 20px;
+  }
+  .evidence-copy h2 {
+    margin-top: 22px;
+    font-size: 22px;
+  }
+  .evidence-copy > p {
+    font-size: 15px;
+  }
+  .detail-meta > span {
+    min-height: 70px;
+  }
+  .timeline-panel .panel__header h3,
+  .location-card .panel__header h3 {
+    font-size: 18px;
+  }
+}
