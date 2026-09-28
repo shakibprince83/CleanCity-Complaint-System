@@ -736,7 +736,7 @@ export function MyComplaints({ navigate, complaints }) {
           </Button>
         }
       />
-      <Panel className="table-panel">
+      <Panel className="table-panel my-complaints-panel">
         <div className="toolbar">
           <SearchBox
             value={query}
