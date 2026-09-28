@@ -3650,3 +3650,131 @@ html[data-theme="light"] .photo-overlay > span {
     font-size: 18px;
   }
 }
+
+
+/* PAGE — My Complaints: larger, clearer table and filter typography. */
+.my-complaints-panel .toolbar {
+  gap: 14px;
+  padding: 20px 21px;
+}
+.my-complaints-panel .search-box {
+  min-height: 52px;
+}
+.my-complaints-panel .search-box input {
+  font-size: 14px;
+  font-weight: 550;
+}
+.my-complaints-panel .search-box input::placeholder {
+  color: #789487;
+  opacity: 0.9;
+}
+.my-complaints-panel .select-control {
+  min-height: 52px;
+  padding-inline: 15px;
+}
+.my-complaints-panel .select-control select {
+  font-size: 13px;
+  font-weight: 650;
+}
+.my-complaints-panel .result-count {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+}
+.my-complaints-panel .data-table th {
+  height: 52px;
+  padding: 0 16px;
+  color: #719080;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 1.05px;
+}
+.my-complaints-panel .data-table td {
+  min-height: 76px;
+  padding: 15px 16px;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 570;
+  line-height: 1.5;
+}
+.my-complaints-panel .table-title {
+  gap: 12px;
+}
+.my-complaints-panel .table-title .category-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 13px;
+}
+.my-complaints-panel .table-title strong {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+.my-complaints-panel .table-title small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+.my-complaints-panel .location-cell {
+  gap: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1.55;
+}
+.my-complaints-panel .location-cell svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+.my-complaints-panel .status-badge {
+  padding: 6px 11px;
+  font-size: 10.5px;
+  font-weight: 850;
+}
+.my-complaints-panel .row-action {
+  width: 38px;
+  height: 38px;
+}
+.my-complaints-panel .row-action svg {
+  width: 21px;
+  height: 21px;
+}
+html[data-theme="light"] .my-complaints-panel .data-table th {
+  color: #426552;
+  background: #dcebe1;
+}
+html[data-theme="light"] .my-complaints-panel .data-table td,
+html[data-theme="light"] .my-complaints-panel .table-title strong,
+html[data-theme="light"] .my-complaints-panel .location-cell,
+html[data-theme="light"] .my-complaints-panel .result-count {
+  color: #173d2a;
+}
+html[data-theme="light"] .my-complaints-panel .table-title small {
+  color: #587566;
+}
+html[data-theme="light"] .my-complaints-panel .search-box input::placeholder {
+  color: #627e70;
+}
+
+@media (max-width: 760px) {
+  .my-complaints-panel .toolbar {
+    padding: 16px;
+  }
+  .my-complaints-panel .search-box,
+  .my-complaints-panel .select-control {
+    min-height: 48px;
+  }
+  .my-complaints-panel .data-table th {
+    font-size: 10px;
+  }
+  .my-complaints-panel .data-table td {
+    padding: 13px 14px;
+    font-size: 12px;
+  }
+  .my-complaints-panel .table-title strong {
+    font-size: 13px;
+  }
+}
