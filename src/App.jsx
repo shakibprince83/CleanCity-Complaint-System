@@ -106,6 +106,7 @@ export default function App() {
     error: adminDataError,
     refresh: refreshAdminData,
     updateComplaint,
+    deleteComplaint,
     updateUser,
     deleteUser,
     saveAuthorityReport,
@@ -270,6 +271,7 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
+        deleteComplaint={deleteComplaint}
         selectComplaint={(complaint) => {
           setSelectedAdminComplaintId(complaint.databaseId);
           navigate("edit-complaint");
@@ -295,6 +297,7 @@ export default function App() {
         {...shared}
         complaint={activeAdminComplaint}
         updateComplaint={updateComplaint}
+        deleteComplaint={deleteComplaint}
       />
     ) : (
       <ManageComplaints
@@ -350,7 +353,7 @@ export default function App() {
     ),
     "validity-review": (
       activeAdminComplaint ? (
-        <ValidityReview {...shared} complaint={activeAdminComplaint} reviewComplaint={reviewComplaint} />
+        <ValidityReview {...shared} complaint={activeAdminComplaint} reviewComplaint={reviewComplaint} deleteComplaint={deleteComplaint} />
       ) : (
         <ManageComplaints {...shared} complaints={adminComplaints} />
       )
