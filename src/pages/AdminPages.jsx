@@ -1040,14 +1040,18 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
     setSaving(true);
     setError("");
     try {
-      await reviewComplaint(
+      const updatedTrustScore = await reviewComplaint(
         complaint.databaseId,
         decision,
         decision === "Valid"
           ? "Evidence and consistency checks completed."
           : "Complaint marked invalid after administrative evidence review.",
       );
-      showToast(decision === "Valid" ? "Complaint confirmed as valid" : "Complaint marked invalid and 10 trust points deducted");
+      showToast(
+        decision === "Valid"
+          ? "Complaint confirmed as valid"
+          : `Complaint marked invalid. The citizen's trust score is now ${updatedTrustScore}.`,
+      );
       navigate("edit-complaint");
     } catch (saveError) {
       setError(saveError.message || "The review could not be saved.");
