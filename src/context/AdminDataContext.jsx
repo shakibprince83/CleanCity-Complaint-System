@@ -126,6 +126,26 @@ export function useAdminData() {
     await refresh();
   }, [isAdmin, refresh]);
 
+  const deleteComplaint = React.useCallback(async (complaintId, imagePath = "") => {
+    if (!supabase || !isAdmin) throw new Error("Administrator access required.");
+
+    const { error: deleteError } = await supabase.rpc("admin_delete_rejected_complaint", {
+      target_complaint_id: complaintId,
+    });
+    if (deleteError) throw deleteError;
+
+    if (imagePath) {
+      const { error: storageError } = await supabase.storage
+        .from("complaint-evidence")
+        .remove([imagePath]);
+      if (storageError) {
+        console.warn("Complaint deleted, but its evidence file could not be removed.", storageError);
+      }
+    }
+
+    await refresh();
+  }, [isAdmin, refresh]);
+
   const updateUser = React.useCallback(async (userId, updates) => {
     if (!supabase || !isAdmin) throw new Error("Administrator access required.");
     const { error: updateError } = await supabase.rpc("admin_update_user", {
@@ -208,6 +228,7 @@ export function useAdminData() {
     error,
     refresh,
     updateComplaint,
+    deleteComplaint,
     updateUser,
     deleteUser,
     saveAuthorityReport,
