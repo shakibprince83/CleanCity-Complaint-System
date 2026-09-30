@@ -306,6 +306,7 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
+        deleteComplaint={deleteComplaint}
       />
     ),
     "user-management": (
