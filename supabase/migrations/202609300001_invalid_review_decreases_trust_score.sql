@@ -12,7 +12,7 @@ set search_path = ''
 as $$
 declare
   target_citizen_id uuid;
-  penalty_created boolean := false;
+  penalty_rows integer := 0;
 begin
   if not public.is_admin() then
     raise exception 'Administrator access required';
