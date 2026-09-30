@@ -365,7 +365,7 @@ export function ManageComplaints({
                       </Button>
                       <button
                         type="button"
-                        className="complaint-delete-button"
+                        className="delete-user-button complaint-delete-button"
                         onClick={() => item.status === "Rejected" && setPendingDelete(item)}
                         disabled={item.status !== "Rejected" || Boolean(deletingId)}
                         aria-label={item.status === "Rejected" ? `Delete ${item.id}` : "Only rejected complaints can be deleted"}
