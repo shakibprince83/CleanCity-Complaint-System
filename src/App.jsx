@@ -271,7 +271,6 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
-        deleteComplaint={deleteComplaint}
         selectComplaint={(complaint) => {
           setSelectedAdminComplaintId(complaint.databaseId);
           navigate("edit-complaint");
@@ -286,6 +285,7 @@ export default function App() {
         loading={adminDataLoading}
         error={adminDataError}
         refresh={refreshAdminData}
+        deleteComplaint={deleteComplaint}
         selectComplaint={(complaint) => {
           setSelectedAdminComplaintId(complaint.databaseId);
           navigate("edit-complaint");
