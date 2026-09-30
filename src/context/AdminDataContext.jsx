@@ -168,13 +168,25 @@ export function useAdminData() {
 
   const reviewComplaint = React.useCallback(async (complaintId, decision, notes) => {
     if (!supabase || !isAdmin) throw new Error("Administrator access required.");
-    const { error: reviewError } = await supabase.rpc("admin_review_complaint", {
-      target_complaint_id: complaintId,
-      review_decision: decision,
-      review_notes: notes || null,
-    });
+
+    const rpcName = decision === "Invalid"
+      ? "admin_mark_complaint_invalid"
+      : "admin_review_complaint";
+    const rpcArguments = decision === "Invalid"
+      ? {
+          target_complaint_id: complaintId,
+          review_notes: notes || null,
+        }
+      : {
+          target_complaint_id: complaintId,
+          review_decision: decision,
+          review_notes: notes || null,
+        };
+
+    const { data, error: reviewError } = await supabase.rpc(rpcName, rpcArguments);
     if (reviewError) throw reviewError;
     await refresh();
+    return decision === "Invalid" ? Number(data) : null;
   }, [isAdmin, refresh]);
 
   const applyPointPenalty = React.useCallback(async (complaintId, reason) => {
