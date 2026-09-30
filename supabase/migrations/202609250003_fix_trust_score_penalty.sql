@@ -1,0 +1,7 @@
+-- Historical migration marker.
+-- The implementation previously stored in this migration was fully superseded by
+-- 202609250004_repair_trust_penalty_notification.sql.
+--
+-- Keep this timestamp so databases that already recorded migration 202609250003
+-- remain compatible with Supabase migration history. This file intentionally
+-- performs no database changes.
