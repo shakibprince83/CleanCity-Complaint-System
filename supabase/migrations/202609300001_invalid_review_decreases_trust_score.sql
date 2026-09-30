@@ -78,9 +78,9 @@ begin
   )
   on conflict (complaint_id) do nothing;
 
-  get diagnostics penalty_created = row_count;
+  get diagnostics penalty_rows = row_count;
 
-  if penalty_created then
+  if penalty_rows = 1 then
     update public.profiles
     set trust_score = greatest(0, coalesce(trust_score, 0) - 10),
         updated_at = now()
