@@ -1047,7 +1047,7 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
           ? "Evidence and consistency checks completed."
           : "Complaint marked invalid after administrative evidence review.",
       );
-      showToast(decision === "Valid" ? "Complaint confirmed as valid" : "Complaint marked as invalid");
+      showToast(decision === "Valid" ? "Complaint confirmed as valid" : "Complaint marked invalid and 10 trust points deducted");
       navigate("edit-complaint");
     } catch (saveError) {
       setError(saveError.message || "The review could not be saved.");
@@ -1077,10 +1077,7 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
             {saving ? "Saving review…" : "Confirm as valid"}
           </Button>
           <Button variant="danger-soft" className="button--full" icon={UserX} disabled={saving} onClick={() => saveDecision("Invalid")}>
-            Invalid complaint
-          </Button>
-          <Button variant="danger-soft" className="button--full" icon={ShieldAlert} disabled={saving} onClick={() => navigate("point-degradation")}>
-            Apply point penalty
+            {saving ? "Applying decision…" : "Invalid complaint (-10 trust points)"}
           </Button>
         </Panel>
       </div></div>
