@@ -189,8 +189,13 @@ export function ManageComplaints({
   error,
   refresh,
   selectComplaint,
+  deleteComplaint,
+  showToast,
 }) {
   const [query, setQuery] = React.useState("");
+  const [pendingDelete, setPendingDelete] = React.useState(null);
+  const [deletingId, setDeletingId] = React.useState("");
+  const [deleteError, setDeleteError] = React.useState("");
   const [status, setStatus] = React.useState("All statuses");
   const filtered = complaints.filter(
     (item) =>
@@ -199,6 +204,22 @@ export function ManageComplaints({
         .includes(query.toLowerCase()) &&
       (status === "All statuses" || item.status === status),
   );
+
+  const handleDelete = async () => {
+    if (!pendingDelete) return;
+    setDeletingId(pendingDelete.databaseId);
+    setDeleteError("");
+    try {
+      await deleteComplaint(pendingDelete.databaseId, pendingDelete.imagePath);
+      showToast(`${pendingDelete.id} was permanently deleted`);
+      setPendingDelete(null);
+    } catch (removeError) {
+      setDeleteError(removeError.message || "The complaint could not be deleted.");
+    } finally {
+      setDeletingId("");
+    }
+  };
+
   return (
     <Shell screen="manage-complaints" navigate={navigate}>
       <PageHeading
@@ -211,7 +232,33 @@ export function ManageComplaints({
           </Button>
         }
       />
-      {error && <p className="form-message form-message--error">{error}</p>}
+      {(error || deleteError) && (
+        <p className="form-message form-message--error">{error || deleteError}</p>
+      )}
+      {pendingDelete && (
+        <div
+          className="delete-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deletingId) setPendingDelete(null);
+          }}
+        >
+          <section className="delete-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-complaint-title">
+            <span className="delete-modal__icon"><Trash2 size={24} /></span>
+            <div className="delete-modal__copy">
+              <small>DELETE REJECTED COMPLAINT</small>
+              <h2 id="delete-complaint-title">Delete {pendingDelete.id}?</h2>
+              <p>This permanently removes the rejected complaint and its related records. This action cannot be undone.</p>
+            </div>
+            <div className="delete-modal__actions">
+              <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={Boolean(deletingId)}>Cancel</Button>
+              <button type="button" className="delete-modal__confirm" onClick={handleDelete} disabled={Boolean(deletingId)}>
+                <Trash2 size={17} />{deletingId ? "Deleting…" : "Delete complaint"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       <Panel className="table-panel">
         <div className="toolbar toolbar--admin">
           <SearchBox
@@ -316,8 +363,15 @@ export function ManageComplaints({
                       >
                         View
                       </Button>
-                      <button>
-                        <MoreHorizontal size={18} />
+                      <button
+                        type="button"
+                        className="complaint-delete-button"
+                        onClick={() => item.status === "Rejected" && setPendingDelete(item)}
+                        disabled={item.status !== "Rejected" || Boolean(deletingId)}
+                        aria-label={item.status === "Rejected" ? `Delete ${item.id}` : "Only rejected complaints can be deleted"}
+                        title={item.status === "Rejected" ? "Delete rejected complaint" : "Only rejected complaints can be deleted"}
+                      >
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </td>
@@ -352,12 +406,15 @@ export function EditComplaint({
   complaint,
   showToast,
   updateComplaint,
+  deleteComplaint,
 }) {
   const [status, setStatus] = React.useState(complaint.status);
   const [priority, setPriority] = React.useState(complaint.priority);
   const [assignedTeam, setAssignedTeam] = React.useState(complaint.assignedTeam || "");
   const [adminNotes, setAdminNotes] = React.useState(complaint.adminNotes || "");
   const [saving, setSaving] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -386,6 +443,21 @@ export function EditComplaint({
     }
   };
 
+  const removeComplaint = async () => {
+    setDeleting(true);
+    setError("");
+    try {
+      await deleteComplaint(complaint.databaseId, complaint.imagePath);
+      showToast(`${complaint.id} was permanently deleted`);
+      setConfirmDelete(false);
+      navigate("manage-complaints");
+    } catch (removeError) {
+      setError(removeError.message || "The complaint could not be deleted.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <Shell screen="manage-complaints" navigate={navigate}>
       <PageHeading
@@ -395,6 +467,30 @@ export function EditComplaint({
         actions={<StatusBadge status={complaint.status} />}
       />
       {error && <p className="form-message form-message--error">{error}</p>}
+      {confirmDelete && (
+        <div
+          className="delete-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deleting) setConfirmDelete(false);
+          }}
+        >
+          <section className="delete-modal" role="alertdialog" aria-modal="true" aria-labelledby="review-delete-title">
+            <span className="delete-modal__icon"><Trash2 size={24} /></span>
+            <div className="delete-modal__copy">
+              <small>DELETE REJECTED COMPLAINT</small>
+              <h2 id="review-delete-title">Delete {complaint.id}?</h2>
+              <p>This permanently removes the rejected complaint and its related records. This action cannot be undone.</p>
+            </div>
+            <div className="delete-modal__actions">
+              <Button variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleting}>Cancel</Button>
+              <button type="button" className="delete-modal__confirm" onClick={removeComplaint} disabled={deleting}>
+                <Trash2 size={17} />{deleting ? "Deleting…" : "Delete complaint"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       <div className="edit-layout">
         <div className="edit-main">
           <Panel title="Complaint information">
@@ -503,6 +599,22 @@ export function EditComplaint({
               Check validity
             </Button>
           </Panel>
+          {complaint.status === "Rejected" && (
+            <Panel title="Delete complaint">
+              <p className="panel-helper-text">
+                This rejected complaint can be permanently removed from the system.
+              </p>
+              <Button
+                variant="danger-soft"
+                className="button--full"
+                icon={Trash2}
+                onClick={() => setConfirmDelete(true)}
+                disabled={deleting}
+              >
+                Delete complaint
+              </Button>
+            </Panel>
+          )}
         </div>
       </div>
     </Shell>
