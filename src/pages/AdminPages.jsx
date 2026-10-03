@@ -1,3 +1,6 @@
+// =============================================================================
+// ADMIN FEATURES: dashboards, complaints, users, validity and reporting
+// =============================================================================
 // Administrator pages for complaint review, users, reports and trust decisions.
 import React from "react";
 import {
@@ -67,6 +70,7 @@ const Shell = ({ screen, navigate, children }) => (
   </AppShell>
 );
 
+// FEATURE: ADMIN DASHBOARD AND OPERATIONAL SUMMARY
 export function AdminDashboard({
   navigate,
   complaints,
@@ -183,6 +187,7 @@ export function AdminDashboard({
   );
 }
 
+// FEATURE: ADMIN COMPLAINT SEARCH, FILTERING AND DELETION
 export function ManageComplaints({
   navigate,
   complaints,
@@ -402,6 +407,7 @@ export function ManageComplaints({
   );
 }
 
+// FEATURE: ADMIN COMPLAINT REVIEW AND WORKFLOW UPDATE
 export function EditComplaint({
   navigate,
   complaint,
@@ -681,6 +687,7 @@ export function EditComplaint({
   );
 }
 
+// FEATURE: ADMIN USER MANAGEMENT
 export function UserManagement({
   navigate,
   users,
@@ -946,6 +953,7 @@ export function UserManagement({
   );
 }
 
+// FEATURE: ADMIN USER ACCOUNT EDITING
 export function EditUser({
   navigate,
   user,
@@ -1056,6 +1064,7 @@ export function EditUser({
   );
 }
 
+// FEATURE: ADMINISTRATOR PROFILE
 export function AdminProfile({ navigate, showToast }) {
   const { user, profile, updateProfile } = useAuth();
   const [editing, setEditing] = React.useState(false);
@@ -1184,6 +1193,7 @@ const authorityReportDefaults = (complaint) => {
   };
 };
 
+// FEATURE: COMPLAINT REPORTING TO RELEVANT AUTHORITIES
 export function ReportAuthority({
   navigate,
   complaint,
@@ -1290,6 +1300,7 @@ export function ReportAuthority({
   );
 }
 
+// FEATURE: COMPLAINT VALIDITY REVIEW AND TRUST-SCORE DECISION
 export function ValidityReview({ navigate, complaint, showToast, reviewComplaint }) {
   const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
   const checks = [
@@ -1352,6 +1363,7 @@ export function ValidityReview({ navigate, complaint, showToast, reviewComplaint
   );
 }
 
+// FEATURE: TRUST-SCORE PENALTY CONFIRMATION
 export function PointDegradation({ navigate, showToast, complaint, applyPointPenalty }) {
   const [confirmed, setConfirmed] = React.useState(false); const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
   const deduction = 10; const currentPoints = Number(complaint.reporterTrustScore || 0); const newPoints = Math.max(0, currentPoints - deduction);
