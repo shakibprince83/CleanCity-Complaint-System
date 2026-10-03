@@ -552,7 +552,7 @@ export function AppShell({
               onFocus={() => setSearchOpen(Boolean(searchQuery.trim()))}
               placeholder={
                 type === "admin"
-                  ? "Search complaints, users or reports"
+                  ? "Search complaints or users"
                   : "Search your complaints"
               }
             />
