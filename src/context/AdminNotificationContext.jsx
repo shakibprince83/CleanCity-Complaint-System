@@ -1,3 +1,6 @@
+// =============================================================================
+// ADMIN NOTIFICATION FEATURE: activity feed, unread state and navigation
+// =============================================================================
 // Supabase-backed administrator activity notifications and per-admin read state.
 import React from "react";
 import { supabase } from "../lib/supabase";
