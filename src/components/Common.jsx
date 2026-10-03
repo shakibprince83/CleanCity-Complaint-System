@@ -31,6 +31,7 @@ import { adminSidebar, citizenSidebar } from "../data";
 import { useAuth } from "../context/AuthContext";
 import { useCitizenData } from "../context/CitizenDataContext";
 import { useAdminNotifications } from "../context/AdminNotificationContext";
+import { useAdminData } from "../context/AdminDataContext";
 import { supabase } from "../lib/supabase";
 
 const iconMap = {
@@ -331,7 +332,6 @@ export function AppShell({
   active,
   navigate,
   children,
-  onPreview,
 }) {
   const { user, profile, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
@@ -356,25 +356,56 @@ export function AppShell({
     markNotificationRead,
     markAllRead: markAllCitizenNotificationsRead,
   } = useCitizenData();
+  const {
+    complaints: adminComplaints,
+    users: adminUsers,
+  } = useAdminData();
   const citizenUnreadCount = citizenNotifications.filter(
     (item) => item.unread,
   ).length;
-  const complaintSuggestions = React.useMemo(() => {
-    if (type !== "citizen" || !searchQuery.trim()) return [];
+  const searchSuggestions = React.useMemo(() => {
+    if (!searchQuery.trim()) return [];
     const query = searchQuery.trim().toLowerCase();
-    return citizenComplaints
-      .filter((complaint) =>
-        [
+    const matches = (values) => values.some((value) =>
+      String(value || "").toLowerCase().includes(query),
+    );
+
+    if (type === "admin") {
+      const complaintMatches = adminComplaints
+        .filter((complaint) => matches([
           complaint.id,
           complaint.title,
           complaint.category,
           complaint.location,
           complaint.description,
           complaint.status,
-        ].some((value) => String(value || "").toLowerCase().includes(query)),
-      )
-      .slice(0, 5);
-  }, [citizenComplaints, searchQuery, type]);
+          complaint.reporterName,
+        ]))
+        .map((complaint) => ({ kind: "complaint", record: complaint }));
+      const userMatches = adminUsers
+        .filter((account) => matches([
+          account.name,
+          account.email,
+          account.phone,
+          account.type,
+          account.status,
+        ]))
+        .map((account) => ({ kind: "user", record: account }));
+      return [...complaintMatches, ...userMatches].slice(0, 5);
+    }
+
+    return citizenComplaints
+      .filter((complaint) => matches([
+        complaint.id,
+        complaint.title,
+        complaint.category,
+        complaint.location,
+        complaint.description,
+        complaint.status,
+      ]))
+      .slice(0, 5)
+      .map((complaint) => ({ kind: "complaint", record: complaint }));
+  }, [adminComplaints, adminUsers, citizenComplaints, searchQuery, type]);
   const citizenName = profile?.full_name || user?.email || "Citizen";
   const adminName = profile?.full_name || user?.email || "Administrator";
   const activeName = type === "admin" ? adminName : citizenName;
@@ -525,55 +556,60 @@ export function AppShell({
                   : "Search your complaints"
               }
             />
-            {type === "citizen" && searchOpen && searchQuery.trim() && (
-              <section className="search-suggestions" aria-label="Complaint search suggestions">
+            {searchOpen && searchQuery.trim() && (
+              <section className="search-suggestions" aria-label={type === "admin" ? "Administrator search suggestions" : "Complaint search suggestions"}>
                 <header className="search-suggestions__header">
                   <span>
-                    <strong>Complaint suggestions</strong>
-                    <small>Search results from your reports</small>
+                    <strong>{type === "admin" ? "Search suggestions" : "Complaint suggestions"}</strong>
+                    <small>{type === "admin" ? "Complaints and registered users" : "Search results from your reports"}</small>
                   </span>
-                  <em>{complaintSuggestions.length}/5</em>
+                  <em>{searchSuggestions.length}/5</em>
                 </header>
                 <div className="search-suggestions__list">
-                  {complaintSuggestions.length ? (
-                    complaintSuggestions.map((complaint) => (
+                  {searchSuggestions.length ? (
+                    searchSuggestions.map(({ kind, record }) => (
                       <button
                         type="button"
-                        key={complaint.databaseId}
+                        key={`${kind}-${record.databaseId || record.id}`}
                         onClick={() => {
-                          setSearchQuery(complaint.title);
+                          setSearchQuery(kind === "user" ? record.name : record.title);
                           setSearchOpen(false);
-                          navigate("complaint-details", {
-                            citizenComplaintId: complaint.databaseId,
-                          });
+                          if (type === "admin" && kind === "user") {
+                            navigate("edit-user", { userId: record.id });
+                          } else if (type === "admin") {
+                            navigate("edit-complaint", { adminComplaintId: record.databaseId });
+                          } else {
+                            navigate("complaint-details", { citizenComplaintId: record.databaseId });
+                          }
                         }}
                       >
                         <span className="search-suggestions__icon">
-                          <FileText size={17} />
+                          {kind === "user" ? <Users size={17} /> : <FileText size={17} />}
                         </span>
                         <span className="search-suggestions__content">
                           <span className="search-suggestions__title">
-                            <strong>{complaint.title}</strong>
-                            <em>{complaint.status}</em>
+                            <strong>{kind === "user" ? record.name : record.title}</strong>
+                            <em>{record.status}</em>
                           </span>
                           <small>
-                            {complaint.id} · {complaint.category}
+                            {kind === "user"
+                              ? `${record.type} · ${record.email || record.phone || "No contact"}`
+                              : `${record.id} · ${record.category}`}
                           </small>
                           <small className="search-suggestions__location">
-                            <MapPin size={12} /> {complaint.location}
+                            {kind === "user" ? <User size={12} /> : <MapPin size={12} />}
+                            {" "}{kind === "user" ? record.address || "Registered account" : record.location}
                           </small>
                         </span>
-                        <span className="search-suggestions__arrow">
-                          <ChevronRight size={16} />
-                        </span>
+                        <span className="search-suggestions__arrow"><ChevronRight size={16} /></span>
                       </button>
                     ))
                   ) : (
                     <div className="search-suggestions__empty">
                       <Search size={20} />
                       <span>
-                        <strong>No complaint found</strong>
-                        <small>Try a title, complaint ID, category or location.</small>
+                        <strong>No result found</strong>
+                        <small>{type === "admin" ? "Try a complaint ID, title, reporter, user name or email." : "Try a title, complaint ID, category or location."}</small>
                       </span>
                     </div>
                   )}
@@ -753,11 +789,6 @@ export function AppShell({
               </span>
               <ChevronRight size={16} />
             </button>
-            {type === "admin" && (
-              <button className="preview-link" onClick={onPreview}>
-                <span>21</span> UI screens
-              </button>
-            )}
           </div>
         </header>
         <div className="workspace__content">{children}</div>
