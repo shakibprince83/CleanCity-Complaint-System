@@ -1,3 +1,6 @@
+// =============================================================================
+// CITIZEN FEATURES: dashboard, complaints, location, evidence and profile
+// =============================================================================
 // Citizen portal pages for reporting, tracking and managing complaints.
 import React from "react";
 import {
@@ -66,6 +69,7 @@ const Shell = ({ screen, navigate, children }) => (
   </AppShell>
 );
 
+// FEATURE: CITIZEN DASHBOARD AND COMPLAINT SUMMARY
 export function CitizenDashboard({ navigate, complaints, dataLoading }) {
   const { user, profile, profileLoading } = useAuth();
   const recent = complaints.slice(0, 4);
@@ -260,6 +264,7 @@ export function CitizenDashboard({ navigate, complaints, dataLoading }) {
   );
 }
 
+// FEATURE: COMPLAINT CREATION, PHOTO SELECTION AND SUBMISSION
 export function SubmitComplaint({
   navigate,
   location,
@@ -530,6 +535,7 @@ export function SubmitComplaint({
   );
 }
 
+// FEATURE: MAP LOCATION SELECTION AND ADDRESS CONFIRMATION
 export function LocationSelection({
   navigate,
   location,
@@ -626,6 +632,7 @@ export function LocationSelection({
   );
 }
 
+// FEATURE: COMPLAINT SUBMISSION CONFIRMATION
 export function SubmissionConfirmation({ navigate, complaint, showToast }) {
   const copyId = async () => {
     try {
@@ -713,6 +720,7 @@ export function SubmissionConfirmation({ navigate, complaint, showToast }) {
   );
 }
 
+// FEATURE: CITIZEN COMPLAINT HISTORY
 export function MyComplaints({ navigate, complaints }) {
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState("All statuses");
@@ -828,6 +836,7 @@ export function MyComplaints({ navigate, complaints }) {
   );
 }
 
+// FEATURE: CITIZEN COMPLAINT DETAILS AND EVIDENCE
 export function ComplaintDetails({ navigate, complaint }) {
   const item = complaint;
   const [imageUrl, setImageUrl] = React.useState("");
