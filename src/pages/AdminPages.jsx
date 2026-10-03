@@ -60,7 +60,6 @@ const Shell = ({ screen, navigate, children }) => (
     type="admin"
     active={screen}
     navigate={navigate}
-    onPreview={() => navigate("preview")}
   >
     {children}
   </AppShell>
