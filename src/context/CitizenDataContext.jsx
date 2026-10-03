@@ -74,16 +74,25 @@ export function CitizenDataProvider({ children }) {
   React.useEffect(() => {
     if (!supabase || !user?.id) return undefined;
 
+    const syncComplaints = () => {
+      if (document.visibilityState !== "hidden") refresh();
+    };
     const channel = supabase
       .channel(`citizen-complaints-${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "complaints" },
-        () => refresh(),
+        syncComplaints,
       )
       .subscribe();
+    const pollId = window.setInterval(syncComplaints, 5000);
+    window.addEventListener("focus", syncComplaints);
+    document.addEventListener("visibilitychange", syncComplaints);
 
     return () => {
+      window.clearInterval(pollId);
+      window.removeEventListener("focus", syncComplaints);
+      document.removeEventListener("visibilitychange", syncComplaints);
       supabase.removeChannel(channel);
     };
   }, [refresh, user?.id]);
