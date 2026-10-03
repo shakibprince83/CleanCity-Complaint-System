@@ -31,7 +31,6 @@ import { adminSidebar, citizenSidebar } from "../data";
 import { useAuth } from "../context/AuthContext";
 import { useCitizenData } from "../context/CitizenDataContext";
 import { useAdminNotifications } from "../context/AdminNotificationContext";
-import { useAdminData } from "../context/AdminDataContext";
 import { supabase } from "../lib/supabase";
 
 const iconMap = {
@@ -338,6 +337,10 @@ export function AppShell({
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [searchOpen, setSearchOpen] = React.useState(false);
+  const [adminSearchData, setAdminSearchData] = React.useState({
+    complaints: [],
+    users: [],
+  });
   const notificationRef = React.useRef(null);
   const searchRef = React.useRef(null);
   const {
@@ -356,10 +359,8 @@ export function AppShell({
     markNotificationRead,
     markAllRead: markAllCitizenNotificationsRead,
   } = useCitizenData();
-  const {
-    complaints: adminComplaints,
-    users: adminUsers,
-  } = useAdminData();
+  const adminComplaints = adminSearchData.complaints;
+  const adminUsers = adminSearchData.users;
   const citizenUnreadCount = citizenNotifications.filter(
     (item) => item.unread,
   ).length;
@@ -415,6 +416,66 @@ export function AppShell({
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+
+  React.useEffect(() => {
+    if (type !== "admin" || !supabase || !user?.id) {
+      setAdminSearchData({ complaints: [], users: [] });
+      return undefined;
+    }
+
+    let activeRequest = true;
+    const loadAdminSearchData = async () => {
+      const [complaintResult, profileResult] = await Promise.all([
+        supabase
+          .from("complaints")
+          .select("id, reference, title, description, category, location, status, citizen_id")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("profiles")
+          .select("id, full_name, email, phone, residential_address, role, account_status")
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (!activeRequest) return;
+      if (complaintResult.error || profileResult.error) {
+        console.error(
+          "Unable to load administrator search records",
+          complaintResult.error || profileResult.error,
+        );
+        setAdminSearchData({ complaints: [], users: [] });
+        return;
+      }
+
+      const profiles = new Map((profileResult.data || []).map((item) => [item.id, item]));
+      setAdminSearchData({
+        complaints: (complaintResult.data || []).map((item) => ({
+          databaseId: item.id,
+          id: item.reference,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          location: item.location,
+          status: item.status,
+          reporterName: profiles.get(item.citizen_id)?.full_name || "Citizen",
+        })),
+        users: (profileResult.data || []).map((item) => ({
+          id: item.id,
+          name: item.full_name || item.email || "User",
+          email: item.email || "",
+          phone: item.phone || "",
+          address: item.residential_address || "",
+          type: item.role === "admin" ? "Admin" : item.role === "volunteer" ? "Volunteer" : "Citizen",
+          status: item.account_status === "active" ? "Active" : "Inactive",
+        })),
+      });
+    };
+
+    loadAdminSearchData();
+    return () => {
+      activeRequest = false;
+    };
+  }, [active, type, user?.id]);
 
   React.useEffect(() => {
     if (!searchOpen) return undefined;
