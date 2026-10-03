@@ -1,3 +1,6 @@
+// =============================================================================
+// CITIZEN DATA FEATURE: complaint records, evidence and notifications
+// =============================================================================
 // Supabase-backed complaint and notification data for the signed-in citizen.
 import React from "react";
 import { supabase } from "../lib/supabase";
@@ -38,6 +41,7 @@ const toNotification = (row) => ({
   tone: row.tone,
 });
 
+// FEATURE: CITIZEN COMPLAINTS, PHOTOS AND NOTIFICATIONS
 export function CitizenDataProvider({ children }) {
   const { user } = useAuth();
   const [complaints, setComplaints] = React.useState([]);
