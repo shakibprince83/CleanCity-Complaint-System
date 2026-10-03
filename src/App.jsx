@@ -347,7 +347,13 @@ export default function App() {
     ),
     "report-authority": (
       activeAdminComplaint ? (
-        <ReportAuthority {...shared} complaint={activeAdminComplaint} saveAuthorityReport={saveAuthorityReport} />
+        <ReportAuthority
+          {...shared}
+          complaint={activeAdminComplaint}
+          complaints={adminComplaints}
+          onSelectComplaint={setSelectedAdminComplaintId}
+          saveAuthorityReport={saveAuthorityReport}
+        />
       ) : (
         <ManageComplaints {...shared} complaints={adminComplaints} />
       )
