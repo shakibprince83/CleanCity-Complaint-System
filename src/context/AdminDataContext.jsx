@@ -109,6 +109,23 @@ export function useAdminData() {
     refresh();
   }, [refresh]);
 
+  React.useEffect(() => {
+    if (!supabase || !user?.id || !isAdmin) return undefined;
+
+    const channel = supabase
+      .channel(`admin-complaints-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "complaints" },
+        () => refresh(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin, refresh, user?.id]);
+
   const updateComplaint = React.useCallback(async (complaintId, updates) => {
     if (!supabase || !isAdmin) throw new Error("Administrator access required.");
     const resolvedAt = updates.status === "Resolved" ? new Date().toISOString() : null;
