@@ -1,3 +1,6 @@
+// =============================================================================
+// SHARED UI FEATURE: application shell, navigation, search and reusable controls
+// =============================================================================
 // Reusable interface components shared by public, citizen and administrator pages.
 import React from "react";
 import {
