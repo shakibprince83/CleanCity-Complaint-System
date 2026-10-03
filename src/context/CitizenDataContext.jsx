@@ -71,6 +71,23 @@ export function CitizenDataProvider({ children }) {
 
   React.useEffect(() => { refresh(); }, [refresh]);
 
+  React.useEffect(() => {
+    if (!supabase || !user?.id) return undefined;
+
+    const channel = supabase
+      .channel(`citizen-complaints-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "complaints" },
+        () => refresh(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refresh, user?.id]);
+
   const addComplaint = React.useCallback(async (payload) => {
     if (!supabase || !user?.id) throw new Error("You must be logged in to submit a complaint.");
     let imagePath = null;
