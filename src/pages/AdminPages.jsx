@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   BarChart3,
   Briefcase,
+  Camera,
   Check,
   CheckCircle2,
   ChevronRight,
@@ -54,6 +55,7 @@ import {
   TrustRing,
 } from "../components/Common";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 
 const Shell = ({ screen, navigate, children }) => (
   <AppShell
@@ -415,6 +417,9 @@ export function EditComplaint({
   const [deleting, setDeleting] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [imageUrl, setImageUrl] = React.useState("");
+  const [imageLoading, setImageLoading] = React.useState(false);
+  const [imageError, setImageError] = React.useState("");
 
   React.useEffect(() => {
     setStatus(complaint.status);
@@ -422,6 +427,39 @@ export function EditComplaint({
     setAssignedTeam(complaint.assignedTeam || "");
     setAdminNotes(complaint.adminNotes || "");
   }, [complaint]);
+
+  React.useEffect(() => {
+    let active = true;
+    setImageUrl("");
+    setImageError("");
+
+    if (!supabase || !complaint?.imagePath) {
+      setImageLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    setImageLoading(true);
+    supabase.storage
+      .from("complaint-evidence")
+      .createSignedUrl(complaint.imagePath, 60 * 60)
+      .then(({ data, error: storageError }) => {
+        if (!active) return;
+        if (storageError) {
+          console.error("Unable to load complaint evidence for admin review", storageError);
+          setImageError("The submitted photo could not be loaded.");
+        } else {
+          setImageUrl(data?.signedUrl || "");
+          if (!data?.signedUrl) setImageError("The submitted photo could not be loaded.");
+        }
+        setImageLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [complaint?.imagePath]);
 
   const save = async () => {
     setSaving(true);
@@ -503,6 +541,29 @@ export function EditComplaint({
             <div className="citizen-description">
               <small>Citizen description</small>
               <p>{complaint.description?.trim() || "No description was provided by the citizen."}</p>
+            </div>
+            <div className={`complaint-photo admin-complaint-photo ${imageUrl ? "complaint-photo--has-image" : ""}`}>
+              <div className="photo-overlay">
+                <Badge tone="glass">
+                  <Camera size={14} /> SUBMITTED EVIDENCE
+                </Badge>
+                <span>
+                  {imageLoading
+                    ? "Loading photo…"
+                    : imageUrl
+                      ? "Uploaded complaint photo"
+                      : imageError || "No photo submitted"}
+                </span>
+              </div>
+              {imageUrl ? (
+                <img
+                  className="complaint-photo__image"
+                  src={imageUrl}
+                  alt={`Evidence submitted for ${complaint.title}`}
+                />
+              ) : (
+                <Camera size={62} aria-hidden="true" />
+              )}
             </div>
             <div className="info-grid info-grid--three">
               <Info label="Reporter" value={complaint.reporterName} />
