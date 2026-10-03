@@ -1,3 +1,6 @@
+// =============================================================================
+// AUTHENTICATION FEATURE: Supabase sessions, profiles and account access
+// =============================================================================
 // Authentication state and citizen profile operations shared across the app.
 import React from "react";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
@@ -16,6 +19,7 @@ const createNidFingerprint = async (nid) => {
     .join("");
 };
 
+// FEATURE: AUTHENTICATION, SESSION RESTORATION AND PROFILE ACCESS
 export function AuthProvider({ children }) {
   const [session, setSession] = React.useState(null);
   const [profile, setProfile] = React.useState(null);
