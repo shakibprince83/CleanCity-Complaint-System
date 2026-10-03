@@ -1,3 +1,6 @@
+// =============================================================================
+// PUBLIC FEATURES: home, login, registration and password recovery
+// =============================================================================
 // Public-facing pages: home, registration, login and interface directory.
 import React from "react";
 import {
