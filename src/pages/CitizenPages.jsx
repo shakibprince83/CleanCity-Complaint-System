@@ -61,7 +61,6 @@ const Shell = ({ screen, navigate, children }) => (
   <AppShell
     active={screen}
     navigate={navigate}
-    onPreview={() => navigate("preview")}
   >
     {children}
   </AppShell>
