@@ -1097,44 +1097,135 @@ export function AdminProfile({ navigate, showToast }) {
   );
 }
 
-export function ReportAuthority({ navigate, complaint, showToast, saveAuthorityReport }) {
-  const deadline = new Date(); deadline.setDate(deadline.getDate() + 7);
-  const [form, setForm] = React.useState({ authority: "Dhaka North City Corporation", subject: `Response requested for ${complaint.id}`,
+const authorityOptions = [
+  "Dhaka North City Corporation",
+  "Dhaka South City Corporation",
+  "Dhaka Water Supply and Sewerage Authority",
+  "Dhaka Metropolitan Police",
+  "Fire Service and Civil Defence",
+  "Department of Environment",
+];
+
+const suggestedAuthority = (category) => {
+  if (category === "Waterlogging") return "Dhaka Water Supply and Sewerage Authority";
+  if (category === "Emergency") return "Fire Service and Civil Defence";
+  return "Dhaka North City Corporation";
+};
+
+const authorityReportDefaults = (complaint) => {
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + 7);
+  return {
+    authority: suggestedAuthority(complaint.category),
+    subject: `Response requested for ${complaint.id}`,
     details: `CleanCity requests an on-site review of the reported issue at ${complaint.location}. The attached citizen evidence and location data have been reviewed.`,
-    responseDeadline: deadline.toISOString().slice(0, 10), priority: complaint.priority || "High" });
-  const [reportRecord, setReportRecord] = React.useState(null);
-  const [saving, setSaving] = React.useState(false); const [error, setError] = React.useState("");
-  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
-  const persist = async (status) => {
-    setSaving(true); setError("");
-    try { const saved = await saveAuthorityReport(complaint.databaseId, { ...form, status }, reportRecord?.id);
-      setReportRecord(saved); showToast(status === "Sent" ? "Authority report sent successfully" : "Report draft saved");
-    } catch (saveError) { setError(saveError.message || "Authority report could not be saved."); }
-    finally { setSaving(false); }
+    responseDeadline: deadline.toISOString().slice(0, 10),
+    priority: complaint.priority || "High",
   };
+};
+
+export function ReportAuthority({
+  navigate,
+  complaint,
+  complaints = [],
+  onSelectComplaint,
+  showToast,
+  saveAuthorityReport,
+}) {
+  const [form, setForm] = React.useState(() => authorityReportDefaults(complaint));
+  const [reportRecord, setReportRecord] = React.useState(null);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  React.useEffect(() => {
+    setForm(authorityReportDefaults(complaint));
+    setReportRecord(null);
+    setError("");
+  }, [complaint.databaseId]);
+
+  const update = (event) => setForm((current) => ({
+    ...current,
+    [event.target.name]: event.target.value,
+  }));
+  const persist = async (status) => {
+    setSaving(true);
+    setError("");
+    try {
+      const saved = await saveAuthorityReport(
+        complaint.databaseId,
+        { ...form, status },
+        reportRecord?.id,
+      );
+      setReportRecord(saved);
+      showToast(status === "Sent" ? `Report for ${complaint.id} sent successfully` : `Draft for ${complaint.id} saved`);
+    } catch (saveError) {
+      setError(saveError.message || "Authority report could not be saved.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <Shell screen="report-authority" navigate={navigate}>
-      <PageHeading eyebrow="EXTERNAL REPORT" title="Report to relevant authority" description="Prepare and store an official report for a complaint requiring external action."
-        actions={<Badge tone={reportRecord?.status === "Sent" ? "green" : "gold"}>{reportRecord?.status || "DRAFT"}</Badge>} />
+      <PageHeading
+        eyebrow="EXTERNAL REPORT"
+        title="Report to relevant authority"
+        description="Select a complaint, choose the responsible authority and prepare an official report."
+        actions={<Badge tone={reportRecord?.status === "Sent" ? "green" : "gold"}>{reportRecord?.status || "DRAFT"}</Badge>}
+      />
       {error && <div className="page-error" role="alert">{error}</div>}
-      <div className="report-layout"><Panel title="Report details" className="report-form">
-        <div className="form-grid form-grid--two"><Field label="Complaint reference"><input value={complaint.id} readOnly /></Field>
-          <Field label="Relevant authority"><select name="authority" value={form.authority} onChange={update}><option>Dhaka North City Corporation</option>
-            <option>Dhaka Metropolitan Police</option><option>Fire Service and Civil Defence</option></select></Field></div>
-        <Field label="Report subject"><input name="subject" value={form.subject} onChange={update} /></Field>
-        <Field label="Report details"><textarea name="details" rows="9" value={form.details} onChange={update} /></Field>
-        <div className="form-grid form-grid--two"><Field label="Response deadline"><input name="responseDeadline" type="date" value={form.responseDeadline} onChange={update} /></Field>
-          <Field label="Priority level"><select name="priority" value={form.priority} onChange={update}><option>Normal</option><option>High</option><option>Urgent</option></select></Field></div>
-        <div className="attachment-row"><span><FileCheck2 size={20} /><span><strong>Complaint evidence package</strong><small>Stored photo, coordinates and review summary</small></span></span><Badge tone="green">ATTACHED</Badge></div>
-        <div className="report-actions"><Button variant="outline" icon={Save} disabled={saving || !form.subject.trim()} onClick={() => persist("Draft")}>{saving ? "Saving…" : "Save draft"}</Button>
-          <Button icon={Send} disabled={saving || !form.subject.trim() || !form.details.trim()} onClick={() => persist("Sent")}>{saving ? "Sending…" : "Send report"}</Button></div>
-      </Panel><div className="report-side"><Panel title="Complaint summary"><div className="report-summary"><Badge tone="green">{complaint.category}</Badge>
-        <h3>{complaint.title}</h3><p>{complaint.id}</p><span><MapPin size={16} />{complaint.location}</span>
-        <span><User size={16} />{complaint.reporterName} · {complaint.reporterVerified ? "Verified" : "Unverified"}</span><StatusBadge status={complaint.status} /></div></Panel>
-        <Panel title="Report history"><div className="report-history"><span><i><FileText size={15} /></i><div>
-          <strong>{reportRecord ? `${reportRecord.status} saved` : "No report saved yet"}</strong>
-          <small>{reportRecord ? new Date(reportRecord.updated_at || reportRecord.created_at).toLocaleString() : "Complete the form and save a draft."}</small>
-        </div></span></div></Panel></div></div>
+      <div className="report-layout">
+        <Panel title="Report details" className="report-form">
+          <div className="form-grid form-grid--two">
+            <Field label="Select complaint">
+              <select
+                value={complaint.databaseId}
+                onChange={(event) => onSelectComplaint?.(event.target.value)}
+                disabled={saving || complaints.length === 0}
+              >
+                {complaints.map((item) => (
+                  <option key={item.databaseId} value={item.databaseId}>
+                    {item.id} · {item.title}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Relevant authority">
+              <select name="authority" value={form.authority} onChange={update}>
+                {authorityOptions.map((authority) => <option key={authority}>{authority}</option>)}
+              </select>
+            </Field>
+          </div>
+          <Field label="Report subject"><input name="subject" value={form.subject} onChange={update} /></Field>
+          <Field label="Report details"><textarea name="details" rows="9" value={form.details} onChange={update} /></Field>
+          <div className="form-grid form-grid--two">
+            <Field label="Response deadline"><input name="responseDeadline" type="date" value={form.responseDeadline} onChange={update} /></Field>
+            <Field label="Priority level"><select name="priority" value={form.priority} onChange={update}><option>Normal</option><option>High</option><option>Urgent</option></select></Field>
+          </div>
+          <div className="attachment-row"><span><FileCheck2 size={20} /><span><strong>Complaint evidence package</strong><small>Stored photo, coordinates and review summary for {complaint.id}</small></span></span><Badge tone="green">ATTACHED</Badge></div>
+          <div className="report-actions">
+            <Button variant="outline" icon={Save} disabled={saving || !form.subject.trim()} onClick={() => persist("Draft")}>{saving ? "Saving…" : "Save draft"}</Button>
+            <Button icon={Send} disabled={saving || !form.subject.trim() || !form.details.trim()} onClick={() => persist("Sent")}>{saving ? "Sending…" : "Send report"}</Button>
+          </div>
+        </Panel>
+        <div className="report-side">
+          <Panel title="Complaint summary">
+            <div className="report-summary">
+              <Badge tone="green">{complaint.category}</Badge>
+              <h3>{complaint.title}</h3><p>{complaint.id}</p>
+              <span><MapPin size={16} />{complaint.location}</span>
+              <span><User size={16} />{complaint.reporterName} · {complaint.reporterVerified ? "Verified" : "Unverified"}</span>
+              <StatusBadge status={complaint.status} />
+            </div>
+          </Panel>
+          <Panel title="Report history">
+            <div className="report-history"><span><i><FileText size={15} /></i><div>
+              <strong>{reportRecord ? `${reportRecord.status} saved` : "No report saved in this session"}</strong>
+              <small>{reportRecord ? new Date(reportRecord.updated_at || reportRecord.created_at).toLocaleString() : "Complete the form and save a draft."}</small>
+            </div></span></div>
+          </Panel>
+        </div>
+      </div>
     </Shell>
   );
 }
