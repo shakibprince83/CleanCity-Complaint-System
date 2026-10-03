@@ -1,3 +1,6 @@
+// =============================================================================
+// ADMIN DATA FEATURE: complaint workflow, users, reports and trust scores
+// =============================================================================
 // Supabase-backed administrator data and management operations.
 import React from "react";
 import { supabase } from "../lib/supabase";
