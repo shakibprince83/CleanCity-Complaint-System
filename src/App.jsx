@@ -1,3 +1,6 @@
+// =============================================================================
+// APPLICATION FEATURES: routing, protected screens and shared application state
+// =============================================================================
 // Main application controller: routes screens, stores demo state and controls themes.
 import React from "react";
 import { ThemeToggle, Toast } from "./components/Common";
@@ -87,6 +90,7 @@ function screenFromHash() {
   return knownScreens.has(screen) ? screen : "preview";
 }
 
+// FEATURE: APPLICATION ROUTING AND ROLE-BASED SCREEN CONTROL
 export default function App() {
   const {
     user,
